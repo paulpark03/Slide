@@ -66,7 +66,7 @@ public class PeekMediaView extends RelativeLayout {
 
     ContentType.Type contentType;
     private GifUtils.AsyncLoadGif     gif;
-    private MediaVideoView            videoView;
+    private ExoVideoView              videoView;
     public  WebView                   website;
     private ProgressBar               progress;
     private SubsamplingScaleImageView image;
@@ -93,7 +93,7 @@ public class PeekMediaView extends RelativeLayout {
     public void doClose() {
         website.setVisibility(View.GONE);
         website.loadUrl("about:blank");
-        videoView.stopPlayback();
+        videoView.stop();
         if (gif != null) gif.cancel(true);
     }
 
@@ -151,8 +151,9 @@ public class PeekMediaView extends RelativeLayout {
                 progress.setIndeterminate(false);
                 break;
             case GIF:
+            case VREDDIT_REDIRECT:
+            case VREDDIT_DIRECT:
             case STREAMABLE:
-            case VID_ME:
                 doLoadGif(url);
                 progress.setIndeterminate(false);
                 break;
@@ -502,13 +503,13 @@ public class PeekMediaView extends RelativeLayout {
     String actuallyLoaded;
 
     public void doLoadGif(final String dat) {
-        videoView = (MediaVideoView) findViewById(R.id.gif);
+        videoView = findViewById(R.id.gif);
         videoView.clearFocus();
         findViewById(R.id.gifarea).setVisibility(View.VISIBLE);
         findViewById(R.id.submission_image).setVisibility(View.GONE);
         progress.setVisibility(View.VISIBLE);
         gif = new GifUtils.AsyncLoadGif((PeekViewActivity) getContext(),
-                (MediaVideoView) findViewById(R.id.gif), progress, null, false, true, true, "") {
+                videoView, progress, null, false, true, "") {
             @Override
             public void onError() {
                 doLoadLink(dat);
@@ -544,7 +545,7 @@ public class PeekMediaView extends RelativeLayout {
             fakeImage.setScaleType(ImageView.ScaleType.CENTER_CROP);
 
             File f = ((Reddit) getContext().getApplicationContext()).getImageLoader()
-                    .getDiscCache()
+                    .getDiskCache()
                     .get(url);
             if (f != null && f.exists()) {
                 imageShown = true;
@@ -573,6 +574,11 @@ public class PeekMediaView extends RelativeLayout {
 
                     @Override
                     public void onTileLoadError(Exception e) {
+
+                    }
+
+                    @Override
+                    public void onPreviewReleased() {
 
                     }
                 });
@@ -616,7 +622,7 @@ public class PeekMediaView extends RelativeLayout {
 
                                         File f =
                                                 ((Reddit) getContext().getApplicationContext()).getImageLoader()
-                                                        .getDiscCache()
+                                                        .getDiskCache()
                                                         .get(url);
                                         if (f != null && f.exists()) {
                                             i.setImage(ImageSource.uri(f.getAbsolutePath()));
@@ -646,7 +652,7 @@ public class PeekMediaView extends RelativeLayout {
     private void init() {
         inflate(getContext(), R.layout.peek_media_view, this);
         this.image = (SubsamplingScaleImageView) findViewById(R.id.submission_image);
-        this.videoView = (MediaVideoView) findViewById(R.id.gif);
+        this.videoView = findViewById(R.id.gif);
         this.website = (WebView) findViewById(R.id.website);
         this.progress = ((ProgressBar) findViewById(R.id.progress));
     }

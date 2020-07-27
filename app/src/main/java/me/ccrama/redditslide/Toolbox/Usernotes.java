@@ -1,7 +1,8 @@
 package me.ccrama.redditslide.Toolbox;
 
-import android.support.annotation.ColorInt;
 import android.util.Base64;
+
+import androidx.annotation.ColorInt;
 
 import com.google.android.exoplayer2.util.ColorParser;
 import com.google.gson.JsonDeserializationContext;
@@ -262,7 +263,7 @@ public class Usernotes {
             if (decodedBlob == null) {
                 return null;
             }
-            JsonElement jsonBlob = new JsonParser().parse(decodedBlob);
+            JsonElement jsonBlob = JsonParser.parseString(decodedBlob);
             Map<String, List<Usernote>> result = new TreeMap<>(String.CASE_INSENSITIVE_ORDER);
 
             for (Map.Entry<String, JsonElement> userAndNotes : jsonBlob.getAsJsonObject().entrySet()) {

@@ -2,15 +2,20 @@ package me.ccrama.redditslide;
 
 import android.content.SharedPreferences;
 import android.content.res.Configuration;
-import me.ccrama.redditslide.Fragments.SettingsHandlingFragment;
-import me.ccrama.redditslide.Views.CreateCardView;
-import me.ccrama.redditslide.Visuals.Palette;
-import me.ccrama.redditslide.util.SortingUtil;
+
 import net.dean.jraw.models.CommentSort;
 import net.dean.jraw.paginators.Sorting;
 import net.dean.jraw.paginators.TimePeriod;
 
-import java.util.*;
+import java.util.Calendar;
+import java.util.HashSet;
+import java.util.Locale;
+import java.util.Set;
+
+import me.ccrama.redditslide.Fragments.SettingsHandlingFragment;
+import me.ccrama.redditslide.Views.CreateCardView;
+import me.ccrama.redditslide.Visuals.Palette;
+import me.ccrama.redditslide.util.SortingUtil;
 
 /**
  * Created by ccrama on 9/19/2015.
@@ -22,7 +27,7 @@ public class SettingValues {
     public static final String PREF_FAB_TYPE                  = "FabType";
     public static final String PREF_DAY_TIME                  = "day";
     public static final String PREF_VOTE_GESTURES             = "voteGestures";
-    public static final String PREF_NIGHT_MODE_STATE = "nightModeState";
+    public static final String PREF_NIGHT_MODE_STATE          = "nightModeState";
     public static final String PREF_NIGHT_MODE                = "nightMode";
     public static final String PREF_NIGHT_THEME               = "nightTheme";
     public static final String PREF_TYPE_IN_TEXT              = "typeInText";
@@ -82,6 +87,7 @@ public class SettingValues {
     public static final String PREF_LQ_LOW                    = "lqLow";
     public static final String PREF_LQ_MID                    = "lqMid";
     public static final String PREF_LQ_HIGH                   = "lqHigh";
+    public static final String PREF_LQ_VIDEOS                 = "lqVideos";
     public static final String PREF_SOUND_NOTIFS              = "soundNotifs";
     public static final String PREF_COOKIES                   = "storeCookies";
     public static final String PREF_NIGHT_START               = "nightStart";
@@ -127,6 +133,7 @@ public class SettingValues {
     public static final String PREF_MOD_TOOLBOX_STICKY     = "toolboxSticky";
     public static final String PREF_MOD_TOOLBOX_LOCK       = "toolboxLock";
     public static final String PREF_MOD_TOOLBOX_MODMAIL    = "toolboxModmail";
+    public static final String PREF_ALWAYS_SHOW_FAB        = "alwaysShowFAB";
 
     public static CreateCardView.CardEnum defaultCardView;
     public static Sorting                 defaultSorting;
@@ -238,6 +245,7 @@ public class SettingValues {
     public static boolean lqLow  = false;
     public static boolean lqMid  = true;
     public static boolean lqHigh = false;
+    public static boolean lqVideos;
     public static int     currentTheme; //current base theme (Light, Dark, Dark blue, etc.)
     public static int     nightTheme;
     public static boolean typeInText;
@@ -257,6 +265,7 @@ public class SettingValues {
     public static boolean toolboxSticky;
     public static boolean toolboxLock;
     public static boolean toolboxModmail;
+    public static boolean alwaysShowFAB;
 
     public static void setAllValues(SharedPreferences settings) {
         prefs = settings;
@@ -266,6 +275,8 @@ public class SettingValues {
 
         bigPicCropped = settings.getBoolean("bigPicCropped", true);
         bigPicEnabled = settings.getBoolean("bigPicEnabled", true);
+
+        alwaysShowFAB=settings.getBoolean("alwaysShowFAB",false);
 
         colorMatchingMode = ColorMatchingMode.valueOf(
                 settings.getString("ccolorMatchingModeNew", "MATCH_EXTERNALLY"));
@@ -338,6 +349,7 @@ public class SettingValues {
         lqLow = prefs.getBoolean(PREF_LQ_LOW, false);
         lqMid = prefs.getBoolean(PREF_LQ_MID, true);
         lqHigh = prefs.getBoolean(PREF_LQ_HIGH, false);
+        lqVideos = prefs.getBoolean(PREF_LQ_VIDEOS, true);
 
         noImages = prefs.getBoolean(PREF_NO_IMAGES, false);
 

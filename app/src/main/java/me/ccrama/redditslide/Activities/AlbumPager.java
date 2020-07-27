@@ -13,11 +13,6 @@ import android.graphics.drawable.Drawable;
 import android.os.AsyncTask;
 import android.os.Bundle;
 import android.os.Environment;
-import android.support.v4.app.Fragment;
-import android.support.v4.app.FragmentManager;
-import android.support.v4.app.FragmentStatePagerAdapter;
-import android.support.v4.view.ViewPager;
-import android.support.v7.widget.Toolbar;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.Menu;
@@ -33,6 +28,12 @@ import android.widget.LinearLayout;
 import android.widget.ProgressBar;
 import android.widget.TextView;
 import android.widget.Toast;
+
+import androidx.appcompat.widget.Toolbar;
+import androidx.fragment.app.Fragment;
+import androidx.fragment.app.FragmentManager;
+import androidx.fragment.app.FragmentStatePagerAdapter;
+import androidx.viewpager.widget.ViewPager;
 
 import com.afollestad.materialdialogs.AlertDialogWrapper;
 import com.cocosw.bottomsheet.BottomSheet;
@@ -66,8 +67,8 @@ import me.ccrama.redditslide.R;
 import me.ccrama.redditslide.Reddit;
 import me.ccrama.redditslide.SettingValues;
 import me.ccrama.redditslide.SpoilerRobotoTextView;
+import me.ccrama.redditslide.Views.ExoVideoView;
 import me.ccrama.redditslide.Views.ImageSource;
-import me.ccrama.redditslide.Views.MediaVideoView;
 import me.ccrama.redditslide.Views.SubsamplingScaleImageView;
 import me.ccrama.redditslide.Views.ToolbarColorizeHelper;
 import me.ccrama.redditslide.Visuals.FontPreferences;
@@ -139,6 +140,7 @@ public class AlbumPager extends FullScreenActivity
 
     @Override
     protected void onActivityResult(int requestCode, int resultCode, Intent data) {
+        super.onActivityResult(requestCode, resultCode, data);
         if (requestCode == 3) {
             Reddit.appRestart.edit().putBoolean("tutorialSwipe", true).apply();
         }
@@ -268,7 +270,7 @@ public class AlbumPager extends FullScreenActivity
                     d.show();
                 }
             });
-            p.setOnPageChangeListener(new ViewPager.OnPageChangeListener() {
+            p.addOnPageChangeListener(new ViewPager.OnPageChangeListener() {
                 @Override
                 public void onPageScrolled(int position, float positionOffset,
                         int positionOffsetPixels) {
@@ -313,15 +315,14 @@ public class AlbumPager extends FullScreenActivity
 
     public class AlbumViewPager extends FragmentStatePagerAdapter {
         public AlbumViewPager(FragmentManager m) {
-            super(m);
+            super(m, BEHAVIOR_RESUME_ONLY_CURRENT_FRAGMENT);
         }
 
         @Override
         public Fragment getItem(int i) {
 
             if (i == 0) {
-                Fragment blankFragment = new BlankFragment();
-                return blankFragment;
+                return new BlankFragment();
             }
 
             i--;
@@ -368,13 +369,13 @@ public class AlbumPager extends FullScreenActivity
             if (this.isVisible()) {
                 if (!isVisibleToUser)   // If we are becoming invisible, then...
                 {
-                    ((MediaVideoView) gif).pause();
+                    ((ExoVideoView) gif).pause();
                     gif.setVisibility(View.GONE);
                 }
 
                 if (isVisibleToUser) // If we are becoming visible, then...
                 {
-                    ((MediaVideoView) gif).start();
+                    ((ExoVideoView) gif).play();
                     gif.setVisibility(View.VISIBLE);
 
                 }
@@ -392,18 +393,17 @@ public class AlbumPager extends FullScreenActivity
             gif = rootView.findViewById(R.id.gif);
 
             gif.setVisibility(View.VISIBLE);
-            final MediaVideoView v = (MediaVideoView) gif;
+            final ExoVideoView v = (ExoVideoView) gif;
             v.clearFocus();
 
             final String url = ((AlbumPager) getActivity()).images.get(i).getImageUrl();
 
-            new GifUtils.AsyncLoadGif(getActivity(),
-                    (MediaVideoView) rootView.findViewById(R.id.gif), loader, null, new Runnable() {
+            new GifUtils.AsyncLoadGif(getActivity(), rootView.findViewById(R.id.gif), loader, null, new Runnable() {
                 @Override
                 public void run() {
 
                 }
-            }, false, true, true, (TextView) rootView.findViewById(R.id.size), ((AlbumPager)getActivity()).subreddit).execute(url);
+            }, false, true, rootView.findViewById(R.id.size), ((AlbumPager)getActivity()).subreddit).execute(url);
             rootView.findViewById(R.id.more).setOnClickListener(new View.OnClickListener() {
                 @Override
                 public void onClick(View v) {
@@ -779,7 +779,7 @@ public class AlbumPager extends FullScreenActivity
     }
 
     @Override
-    public void onFolderSelection(FolderChooserDialogCreate dialog, File folder) {
+    public void onFolderSelection(FolderChooserDialogCreate dialog, File folder, boolean isSaveToLocation) {
         if (folder != null) {
             Reddit.appRestart.edit().putString("imagelocation", folder.getAbsolutePath()).apply();
             Toast.makeText(this,

@@ -116,7 +116,7 @@ public class AlbumUtils {
                 final Image toDo = new Image();
                 toDo.setAnimated(data.getAnimated() || data.getLink().contains(".gif"));
                 toDo.setDescription(data.getDescription());
-                if(data.getAdditionalProperties().keySet().contains("mp4")){
+                if(data.getAdditionalProperties().containsKey("mp4")){
                     toDo.setHash(getHash(data.getAdditionalProperties().get("mp4").toString()));
                 } else {
                     toDo.setHash(getHash(data.getLink()));
@@ -224,8 +224,8 @@ public class AlbumUtils {
             } else {
                 if (baseActivity != null) {
                     final String apiUrl = getUrl(hash);
-                    if (albumRequests.contains(apiUrl) && new JsonParser().parse(albumRequests.getString(apiUrl, "")).getAsJsonObject().has("data")) {
-                        parseJson(new JsonParser().parse(albumRequests.getString(apiUrl, "")).getAsJsonObject());
+                    if (albumRequests.contains(apiUrl) && JsonParser.parseString(albumRequests.getString(apiUrl, "")).getAsJsonObject().has("data")) {
+                        parseJson(JsonParser.parseString(albumRequests.getString(apiUrl, "")).getAsJsonObject());
                     } else {
                         LogUtil.v(apiUrl);
                         // This call requires no mashape headers, don't pass in the headers Map

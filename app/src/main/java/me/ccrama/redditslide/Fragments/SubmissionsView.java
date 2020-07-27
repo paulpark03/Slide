@@ -9,15 +9,6 @@ import android.graphics.Color;
 import android.os.Build;
 import android.os.Bundle;
 import android.os.Handler;
-import android.support.annotation.NonNull;
-import android.support.design.widget.FloatingActionButton;
-import android.support.design.widget.Snackbar;
-import android.support.v4.app.Fragment;
-import android.support.v4.view.MarginLayoutParamsCompat;
-import android.support.v4.view.animation.LinearOutSlowInInterpolator;
-import android.support.v4.widget.SwipeRefreshLayout;
-import android.support.v7.view.ContextThemeWrapper;
-import android.support.v7.widget.RecyclerView;
 import android.view.GestureDetector;
 import android.view.HapticFeedbackConstants;
 import android.view.LayoutInflater;
@@ -27,18 +18,32 @@ import android.view.ViewGroup;
 import android.widget.RelativeLayout;
 import android.widget.TextView;
 
+import androidx.annotation.NonNull;
+import androidx.appcompat.view.ContextThemeWrapper;
+import androidx.core.view.MarginLayoutParamsCompat;
+import androidx.fragment.app.Fragment;
+import androidx.interpolator.view.animation.LinearOutSlowInInterpolator;
+import androidx.recyclerview.widget.RecyclerView;
+import androidx.swiperefreshlayout.widget.SwipeRefreshLayout;
+
 import com.afollestad.materialdialogs.AlertDialogWrapper;
 import com.afollestad.materialdialogs.DialogAction;
 import com.afollestad.materialdialogs.MaterialDialog;
+import com.google.android.material.floatingactionbutton.FloatingActionButton;
+import com.google.android.material.snackbar.Snackbar;
 import com.mikepenz.itemanimators.AlphaInAnimator;
 import com.mikepenz.itemanimators.SlideUpAlphaAnimator;
 
-import me.ccrama.redditslide.Activities.*;
 import net.dean.jraw.models.Submission;
 
 import java.util.List;
 import java.util.Locale;
 
+import me.ccrama.redditslide.Activities.BaseActivity;
+import me.ccrama.redditslide.Activities.MainActivity;
+import me.ccrama.redditslide.Activities.Search;
+import me.ccrama.redditslide.Activities.Submit;
+import me.ccrama.redditslide.Activities.SubredditView;
 import me.ccrama.redditslide.Adapters.SubmissionAdapter;
 import me.ccrama.redditslide.Adapters.SubmissionDisplay;
 import me.ccrama.redditslide.Adapters.SubredditPosts;
@@ -111,11 +116,7 @@ public class SubmissionsView extends Fragment implements SubmissionDisplay {
                 createLayoutManager(getNumColumns(getResources().getConfiguration().orientation, getActivity()));
 
         if (!(getActivity() instanceof SubredditView)) {
-            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.JELLY_BEAN) {
-                v.findViewById(R.id.back).setBackground(null);
-            } else {
-                v.findViewById(R.id.back).setBackgroundDrawable(null);
-            }
+            v.findViewById(R.id.back).setBackground(null);
         }
         rv.setLayoutManager(mLayoutManager);
         rv.setItemAnimator(new SlideUpAlphaAnimator().withInterpolator(new LinearOutSlowInInterpolator()));
@@ -319,7 +320,7 @@ public class SubmissionsView extends Fragment implements SubmissionDisplay {
                         });*/
                         View view = s.getView();
                         TextView tv = view.findViewById(
-                                android.support.design.R.id.snackbar_text);
+                                com.google.android.material.R.id.snackbar_text);
                         tv.setTextColor(Color.WHITE);
                         s.show();
                     }
@@ -537,12 +538,11 @@ public class SubmissionsView extends Fragment implements SubmissionDisplay {
 
                     if (startIndex != -1 && !forced ) {
                         adapter.notifyItemRangeInserted(startIndex + 1, posts.posts.size());
-                        adapter.notifyDataSetChanged();
                     } else {
                         forced = false;
                         rv.scrollToPosition(0);
-                        adapter.notifyDataSetChanged();
                     }
+                    adapter.notifyDataSetChanged();
 
                 }
             });
@@ -590,7 +590,6 @@ public class SubmissionsView extends Fragment implements SubmissionDisplay {
             }
         }
         mSwipeRefreshLayout.setRefreshing(false);
-        adapter.setError(true);
     }
 
     @Override
@@ -671,7 +670,10 @@ public class SubmissionsView extends Fragment implements SubmissionDisplay {
                                         fab.show();
                                     }
                                 } else {
-                                    fab.hide();
+                                    if(!SettingValues.alwaysShowFAB)
+                                    {
+                                        fab.hide();
+                                    }
                                 }
                             }
 

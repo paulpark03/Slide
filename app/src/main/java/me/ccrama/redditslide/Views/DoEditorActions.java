@@ -1,18 +1,16 @@
 package me.ccrama.redditslide.Views;
 
 import android.app.Activity;
-import android.content.*;
+import android.content.ActivityNotFoundException;
+import android.content.ContentResolver;
+import android.content.Context;
+import android.content.DialogInterface;
+import android.content.Intent;
 import android.content.res.TypedArray;
 import android.graphics.Bitmap;
 import android.graphics.Color;
 import android.net.Uri;
 import android.os.AsyncTask;
-import android.support.annotation.NonNull;
-import android.support.annotation.Nullable;
-import android.support.design.widget.Snackbar;
-import android.support.v4.app.Fragment;
-import android.support.v4.app.FragmentManager;
-import android.support.v4.content.ContextCompat;
 import android.text.Editable;
 import android.util.Base64;
 import android.view.LayoutInflater;
@@ -21,16 +19,18 @@ import android.view.inputmethod.InputMethodManager;
 import android.widget.EditText;
 import android.widget.LinearLayout;
 import android.widget.TextView;
+
+import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
+import androidx.core.content.ContextCompat;
+import androidx.fragment.app.Fragment;
+import androidx.fragment.app.FragmentManager;
+
 import com.afollestad.materialdialogs.AlertDialogWrapper;
 import com.afollestad.materialdialogs.DialogAction;
 import com.afollestad.materialdialogs.MaterialDialog;
-import gun0912.tedbottompicker.TedBottomPicker;
-import me.ccrama.redditslide.Activities.Draw;
-import me.ccrama.redditslide.*;
-import me.ccrama.redditslide.util.LogUtil;
-import me.ccrama.redditslide.util.SubmissionParser;
-import okhttp3.*;
-import okio.*;
+import com.google.android.material.snackbar.Snackbar;
+
 import org.apache.commons.text.StringEscapeUtils;
 import org.commonmark.Extension;
 import org.commonmark.ext.gfm.strikethrough.StrikethroughExtension;
@@ -40,11 +40,40 @@ import org.commonmark.node.Node;
 import org.commonmark.parser.Parser;
 import org.json.JSONObject;
 
-import java.io.*;
+import java.io.BufferedOutputStream;
+import java.io.ByteArrayOutputStream;
+import java.io.Closeable;
+import java.io.File;
+import java.io.FileNotFoundException;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
+
+import gun0912.tedbottompicker.TedBottomPicker;
+import me.ccrama.redditslide.Activities.Draw;
+import me.ccrama.redditslide.ColorPreferences;
+import me.ccrama.redditslide.Drafts;
+import me.ccrama.redditslide.R;
+import me.ccrama.redditslide.Reddit;
+import me.ccrama.redditslide.SettingValues;
+import me.ccrama.redditslide.SpoilerRobotoTextView;
+import me.ccrama.redditslide.util.LogUtil;
+import me.ccrama.redditslide.util.SubmissionParser;
+import okhttp3.MediaType;
+import okhttp3.MultipartBody;
+import okhttp3.OkHttpClient;
+import okhttp3.Request;
+import okhttp3.RequestBody;
+import okhttp3.Response;
+import okio.Buffer;
+import okio.BufferedSink;
+import okio.ForwardingSink;
+import okio.Okio;
+import okio.Sink;
 
 /**
  * Created by carlo_000 on 10/18/2015.
@@ -53,7 +82,7 @@ public class DoEditorActions {
 
     public static void doActions(final EditText editText, final View baseView,
             final FragmentManager fm, final Activity a, final String oldComment,
-            @Nullable final String authors[]) {
+            @Nullable final String[] authors) {
         baseView.findViewById(R.id.bold).setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
@@ -151,7 +180,7 @@ public class DoEditorActions {
                 Snackbar s = Snackbar.make(baseView.findViewById(R.id.savedraft), "Draft saved",
                         Snackbar.LENGTH_SHORT);
                 View view = s.getView();
-                TextView tv = view.findViewById(android.support.design.R.id.snackbar_text);
+                TextView tv = view.findViewById(com.google.android.material.R.id.snackbar_text);
                 tv.setTextColor(Color.WHITE);
                 s.setAction(R.string.btn_discard, new View.OnClickListener() {
                     @Override
@@ -727,7 +756,7 @@ public class DoEditorActions {
 
             try {
                 buffer = new BufferedOutputStream(new FileOutputStream(file));
-                byte byt[] = new byte[1024];
+                byte[] byt = new byte[1024];
                 int i;
 
                 for (long l = 0L; (i = in.read(byt)) != -1; l += i) {
@@ -779,9 +808,8 @@ public class DoEditorActions {
 
 
                 Request request = new Request.Builder().header("Authorization",
-                        "Client-ID " + Constants.IMGUR_MASHAPE_CLIENT_ID)
-                        .header("X-Mashape-Key", SecretConstants.getImgurApiKey(c))
-                        .url("https://imgur-apiv3.p.mashape.com/3/image")
+                        "Client-ID bef87913eb202e9")
+                        .url("https://api.imgur.com/3/image")
                         .post(body)
                         .build();
 
@@ -942,7 +970,7 @@ public class DoEditorActions {
 
             try {
                 buffer = new BufferedOutputStream(new FileOutputStream(file));
-                byte byt[] = new byte[1024];
+                byte[] byt = new byte[1024];
                 int i;
 
                 for (long l = 0L; (i = in.read(byt)) != -1; l += i) {
@@ -982,9 +1010,8 @@ public class DoEditorActions {
             String albumurl;
             {
                 Request request = new Request.Builder().header("Authorization",
-                        "Client-ID " + Constants.IMGUR_MASHAPE_CLIENT_ID)
-                        .header("X-Mashape-Key", SecretConstants.getImgurApiKey(c))
-                        .url("https://imgur-apiv3.p.mashape.com/3/album")
+                        "Client-ID bef87913eb202e9")
+                        .url("https://api.imgur.com/3/album")
                         .post(new RequestBody() {
                             @Override
                             public MediaType contentType() {
@@ -1035,9 +1062,8 @@ public class DoEditorActions {
 
 
                     Request request = new Request.Builder().header("Authorization",
-                            "Client-ID " + Constants.IMGUR_MASHAPE_CLIENT_ID)
-                            .header("X-Mashape-Key", SecretConstants.getImgurApiKey(c))
-                            .url("https://imgur-apiv3.p.mashape.com/3/image")
+                            "Client-ID bef87913eb202e9")
+                            .url("https://api.imgur.com/3/image")
                             .post(body)
                             .build();
 
@@ -1154,7 +1180,7 @@ public class DoEditorActions {
         } else {
             //Multiple images
             try {
-                new UploadImgurAlbum(c).execute(uris.toArray(new Uri[uris.size()]));
+                new UploadImgurAlbum(c).execute(uris.toArray(new Uri[0]));
             } catch (Exception e) {
                 e.printStackTrace();
 

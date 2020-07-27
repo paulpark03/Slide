@@ -513,6 +513,12 @@
     <string name="mod_btn_unmark_nsfw">Unmark NSFW</string>
     <string name="mod_btn_mark_spoiler">Mark as spoiler</string>
     <string name="mod_btn_unmark_spoiler">Unmark as spoiler</string>
+    <string name="mod_btn_lock_thread">Lock thread</string>
+    <string name="mod_btn_unlock_thread">Unlock thread</string>
+    <string name="mod_btn_lock_comment">Lock comment</string>
+    <string name="mod_btn_unlock_comment">Unlock comment</string>
+    <string name="mod_locked">Locked</string>
+    <string name="mod_unlocked">Unlocked</string>
     <string name="mod_btn_pin">Pin</string>
     <string name="mod_btn_unpin">Unpin</string>
     <string name="mod_btn_remove">Remove</string>
@@ -694,7 +700,7 @@
     <string name="settings_section_save_history">Save history</string>
     <string name="settings_section_clear_history">Clear history</string>
     <string name="settings_section_data_saving_mode">Data saving mode</string>
-    <string name="settings_section_image_quality">Image quality</string>
+    <string name="settings_section_data_saving_quality">Data saving quality</string>
     <string name="settings_section_hide_images">Hide images</string>
     <string name="settings_comment_color">Colorful comment depth indicators</string>
     <string name="settings_volume_nav_comments">Navigate comments using volume buttons</string>
@@ -712,7 +718,8 @@
     <string name="settings_comment_collapse">Fully collapse comments</string>
     <string name="settings_comment_collapse_description">Also disables comment animations</string>
     <string name="settings_comment_collapse_default">Collapse child comments by default</string>
-    <string name="settings_data_enable">Enable datasaving settings</string>
+    <string name="settings_data_enable">Enable Data Saving settings</string>
+    <string name="settings_data_video_quality">Prefer low-quality videos when Data Saving enabled</string>
     <string name="settings_backup_occurs">Backup will occur at %1$s</string>
     <string name="settings_backup_none">No subreddits will back up</string>
     <string name="settings_backup_will_backup">\u0020will back up</string>
@@ -731,6 +738,8 @@
     <string name="settings_layout_picture_mode">Picture mode</string>
     <string name="settings_general_expanded_toolbar">Expanded toolbar menu</string>
     <string name="settings_general_expanded_toolbar_desc">Show more options on the subreddit toolbar</string>
+    <string name="settings_always_show_floating_action_button">Always show floating action button</string>
+    <string name="settings_always_show_floating_action_button_desc">Never hide floating action button when scrolling</string>
     <string name="settings_theme_tinting">Submission color tinting mode</string>
     <string name="settings_reddit_thumbnail_mode">Thumbnail mode</string>
     <string name="settings_layout_actionbar_mode">Actionbar mode</string>
