@@ -7,6 +7,7 @@ import android.graphics.BitmapFactory;
 import android.graphics.Typeface;
 import android.net.Uri;
 import android.os.AsyncTask;
+import android.support.v7.widget.AppCompatCheckBox;
 import android.text.Html;
 import android.text.SpannableStringBuilder;
 import android.text.Spanned;
@@ -23,8 +24,6 @@ import android.widget.ProgressBar;
 import android.widget.RelativeLayout;
 import android.widget.TextView;
 
-import androidx.appcompat.widget.AppCompatCheckBox;
-
 import com.devspark.robototextview.RobotoTypefaces;
 
 import net.dean.jraw.models.Account;
@@ -33,6 +32,7 @@ import net.dean.jraw.models.Submission;
 import net.dean.jraw.models.Subreddit;
 import net.dean.jraw.models.VoteDirection;
 
+import java.util.Arrays;
 import java.util.List;
 import java.util.Locale;
 
@@ -102,9 +102,11 @@ public class RedditItemView extends RelativeLayout {
                 v.doLoadLink(url);
             }
             break;
-            case WIKI:
-            case SEARCH:
-            case OTHER: {
+            case WIKI: {
+                v.doLoadLink(url);
+                break;
+            }
+            case SEARCH: {
                 v.doLoadLink(url);
                 break;
             }
@@ -140,6 +142,10 @@ public class RedditItemView extends RelativeLayout {
             case USER: {
                 String name = parts.get(1);
                 new AsyncLoadProfile(name).executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR);
+                break;
+            }
+            case OTHER: {
+                v.doLoadLink(url);
                 break;
             }
 
@@ -262,16 +268,6 @@ public class RedditItemView extends RelativeLayout {
                             (ImageView) content.findViewById(R.id.subimage));
         } else {
             content.findViewById(R.id.subimage).setVisibility(View.GONE);
-        }
-        if (findViewById(R.id.sub_banner) != null) {
-            String bannerImage = subreddit.getBannerImage();
-            if (bannerImage != null && !bannerImage.isEmpty()) {
-                findViewById(R.id.sub_banner).setVisibility(View.VISIBLE);
-                ((Reddit) ((PeekViewActivity) getContext()).getApplication()).getImageLoader()
-                        .displayImage(bannerImage, (ImageView) findViewById(R.id.sub_banner));
-            } else {
-                findViewById(R.id.sub_banner).setVisibility(View.GONE);
-            }
         }
         ((TextView) content.findViewById(R.id.subscribers)).setText(
                 getContext().getString(R.string.subreddit_subscribers_string,
@@ -432,7 +428,7 @@ public class RedditItemView extends RelativeLayout {
             // Add silver, gold, platinum icons and counts in that order
             if (comment.getTimesSilvered() > 0) {
                 final String timesSilvered = (comment.getTimesSilvered() == 1) ? ""
-                        : "\u200Ax" + comment.getTimesSilvered();
+                        : "\u200Ax" + Integer.toString(comment.getTimesSilvered());
                 SpannableStringBuilder silvered =
                         new SpannableStringBuilder("\u00A0★" + timesSilvered + "\u00A0");
                 Bitmap image = BitmapFactory.decodeResource(getContext().getResources(), R.drawable.silver);
@@ -447,7 +443,7 @@ public class RedditItemView extends RelativeLayout {
             }
             if (comment.getTimesGilded() > 0) {
                 final String timesGilded = (comment.getTimesGilded() == 1) ? ""
-                        : "\u200Ax" + comment.getTimesGilded();
+                        : "\u200Ax" + Integer.toString(comment.getTimesGilded());
                 SpannableStringBuilder gilded =
                         new SpannableStringBuilder("\u00A0★" + timesGilded + "\u00A0");
                 Bitmap image = BitmapFactory.decodeResource(getContext().getResources(), R.drawable.gold);
@@ -462,7 +458,7 @@ public class RedditItemView extends RelativeLayout {
             }
             if (comment.getTimesPlatinized() > 0) {
                 final String timesPlatinized = (comment.getTimesPlatinized() == 1) ? ""
-                        : "\u200Ax" + comment.getTimesPlatinized();
+                        : "\u200Ax" + Integer.toString(comment.getTimesPlatinized());
                 SpannableStringBuilder platinized =
                         new SpannableStringBuilder("\u00A0★" + timesPlatinized + "\u00A0");
                 Bitmap image = BitmapFactory.decodeResource(getContext().getResources(), R.drawable.platinum);

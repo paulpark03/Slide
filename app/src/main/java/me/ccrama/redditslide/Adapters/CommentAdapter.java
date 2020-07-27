@@ -10,16 +10,17 @@ import android.app.Activity;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.content.res.Resources;
-import android.graphics.Bitmap;
-import android.graphics.BitmapFactory;
-import android.graphics.Color;
-import android.graphics.PorterDuff;
-import android.graphics.Typeface;
+import android.graphics.*;
 import android.net.Uri;
 import android.os.AsyncTask;
 import android.os.Build;
 import android.os.Handler;
 import android.os.Looper;
+import android.support.v4.app.FragmentManager;
+import android.support.v4.content.ContextCompat;
+import android.support.v4.view.animation.FastOutSlowInInterpolator;
+import android.support.v7.widget.LinearLayoutManager;
+import android.support.v7.widget.RecyclerView;
 import android.text.Editable;
 import android.text.TextWatcher;
 import android.util.Log;
@@ -28,74 +29,36 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.view.inputmethod.InputMethodManager;
-import android.widget.EditText;
-import android.widget.ImageView;
-import android.widget.LinearLayout;
-import android.widget.RelativeLayout;
-import android.widget.TextView;
-
-import androidx.core.content.ContextCompat;
-import androidx.fragment.app.FragmentManager;
-import androidx.interpolator.view.animation.FastOutSlowInInterpolator;
-import androidx.recyclerview.widget.LinearLayoutManager;
-import androidx.recyclerview.widget.RecyclerView;
-
+import android.widget.*;
 import com.afollestad.materialdialogs.AlertDialogWrapper;
 import com.devspark.robototextview.RobotoTypefaces;
 import com.lusfold.androidkeyvaluestore.KVStore;
 import com.mikepenz.itemanimators.AlphaInAnimator;
 import com.mikepenz.itemanimators.SlideRightAlphaAnimator;
 import com.nostra13.universalimageloader.utils.DiskCacheUtils;
-
-import net.dean.jraw.ApiException;
-import net.dean.jraw.RedditClient;
-import net.dean.jraw.http.UserAgent;
-import net.dean.jraw.managers.AccountManager;
-import net.dean.jraw.models.Comment;
-import net.dean.jraw.models.CommentNode;
-import net.dean.jraw.models.Contribution;
-import net.dean.jraw.models.Submission;
-import net.dean.jraw.models.VoteDirection;
-
-import java.io.File;
-import java.io.PrintWriter;
-import java.io.StringWriter;
-import java.io.Writer;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Locale;
-import java.util.Map;
-import java.util.TreeMap;
-
-import me.ccrama.redditslide.ActionStates;
+import me.ccrama.redditslide.*;
 import me.ccrama.redditslide.Activities.BaseActivity;
-import me.ccrama.redditslide.Authentication;
-import me.ccrama.redditslide.BuildConfig;
-import me.ccrama.redditslide.Constants;
-import me.ccrama.redditslide.Drafts;
 import me.ccrama.redditslide.Fragments.CommentPage;
-import me.ccrama.redditslide.HasSeen;
-import me.ccrama.redditslide.ImageFlairs;
-import me.ccrama.redditslide.LastComments;
-import me.ccrama.redditslide.OpenRedditLink;
-import me.ccrama.redditslide.R;
-import me.ccrama.redditslide.Reddit;
-import me.ccrama.redditslide.SettingValues;
-import me.ccrama.redditslide.SpoilerRobotoTextView;
 import me.ccrama.redditslide.SubmissionViews.PopulateSubmissionViewHolder;
-import me.ccrama.redditslide.UserSubscriptions;
 import me.ccrama.redditslide.Views.CommentOverflow;
 import me.ccrama.redditslide.Views.DoEditorActions;
 import me.ccrama.redditslide.Views.PreCachingLayoutManagerComments;
 import me.ccrama.redditslide.Visuals.FontPreferences;
 import me.ccrama.redditslide.Visuals.Palette;
-import me.ccrama.redditslide.Vote;
 import me.ccrama.redditslide.util.LogUtil;
 import me.ccrama.redditslide.util.OnSingleClickListener;
 import me.ccrama.redditslide.util.SubmissionParser;
+import net.dean.jraw.ApiException;
+import net.dean.jraw.RedditClient;
+import net.dean.jraw.http.UserAgent;
+import net.dean.jraw.managers.AccountManager;
+import net.dean.jraw.models.*;
+
+import java.io.File;
+import java.io.PrintWriter;
+import java.io.StringWriter;
+import java.io.Writer;
+import java.util.*;
 
 
 public class CommentAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> {
@@ -246,7 +209,7 @@ public class CommentAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder
 
     }
 
-    public static class SpacerViewHolder extends RecyclerView.ViewHolder {
+    public class SpacerViewHolder extends RecyclerView.ViewHolder {
         public SpacerViewHolder(View itemView) {
             super(itemView);
         }
@@ -256,7 +219,9 @@ public class CommentAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder
         if (currentComments == null) return;
         for (CommentObject o : currentComments) {
             if (o.comment.isTopLevel()) {
-                hiddenPersons.remove(o.comment.getComment().getFullName());
+                if (hiddenPersons.contains(o.comment.getComment().getFullName())) {
+                    hiddenPersons.remove(o.comment.getComment().getFullName());
+                }
                 unhideAll(o.comment);
             }
         }
@@ -380,7 +345,8 @@ public class CommentAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder
             };
             holder.itemView.setOnClickListener(singleClick);
             holder.commentOverflow.setOnClickListener(singleClick);
-            if (!toCollapse.contains(comment.getFullName()) || !SettingValues.collapseComments) {
+            if (!toCollapse.contains(comment.getFullName()) && SettingValues.collapseComments
+                    || !SettingValues.collapseComments) {
                 setViews(comment.getDataNode().get("body_html").asText(),
                         submission.getSubredditName(), holder, singleClick, onLongClickListener);
             }
@@ -698,7 +664,7 @@ public class CommentAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder
 
                     AlertDialogWrapper.Builder builder = new AlertDialogWrapper.Builder(mContext);
                     builder.setTitle(mContext.getString(R.string.replies_switch_accounts));
-                    builder.setSingleChoiceItems(keys.toArray(new String[0]), i,
+                    builder.setSingleChoiceItems(keys.toArray(new String[keys.size()]), i,
                             new DialogInterface.OnClickListener() {
                                 @Override
                                 public void onClick(DialogInterface dialog, int which) {
@@ -1252,7 +1218,6 @@ public class CommentAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder
             if (Authentication.isLoggedIn
                     && !submission.isArchived()
                     && !submission.isLocked()
-                    && !(comment.getDataNode().has("locked") && comment.getDataNode().get("locked").asBoolean())
                     && !deleted.contains(n.getFullName())
                     && !comment.getAuthor().equals("[deleted]")
                     && Authentication.didOnline) {
@@ -1320,7 +1285,7 @@ public class CommentAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder
                             AlertDialogWrapper.Builder builder =
                                     new AlertDialogWrapper.Builder(mContext);
                             builder.setTitle(R.string.sorting_choose);
-                            builder.setSingleChoiceItems(keys.toArray(new String[0]), i,
+                            builder.setSingleChoiceItems(keys.toArray(new String[keys.size()]), i,
                                     new DialogInterface.OnClickListener() {
                                         @Override
                                         public void onClick(DialogInterface dialog, int which) {
@@ -1440,7 +1405,7 @@ public class CommentAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder
                                 AlertDialogWrapper.Builder builder =
                                         new AlertDialogWrapper.Builder(mContext);
                                 builder.setTitle(R.string.sorting_choose);
-                                builder.setSingleChoiceItems(keys.toArray(new String[0]),
+                                builder.setSingleChoiceItems(keys.toArray(new String[keys.size()]),
                                         i, new DialogInterface.OnClickListener() {
                                             @Override
                                             public void onClick(DialogInterface dialog, int which) {
@@ -1952,13 +1917,14 @@ public class CommentAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder
             int counter = unhideNumber(n, 0);
             if (SettingValues.collapseComments) {
                 listView.setItemAnimator(null);
+                notifyItemRangeInserted(i, counter);
             } else {
                 try {
                     listView.setItemAnimator(new AlphaInAnimator());
                 } catch (Exception ignored) {
                 }
+                notifyItemRangeInserted(i, counter);
             }
-            notifyItemRangeInserted(i, counter);
         } catch (Exception ignored) {
 
         }
@@ -1968,10 +1934,11 @@ public class CommentAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder
         unhideNumber(n, 0);
         if (SettingValues.collapseComments) {
             listView.setItemAnimator(null);
+            notifyDataSetChanged();
         } else {
             listView.setItemAnimator(new AlphaInAnimator());
+            notifyDataSetChanged();
         }
-        notifyDataSetChanged();
     }
 
     public void hideAll(CommentNode n) {
@@ -1979,10 +1946,11 @@ public class CommentAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder
         hideNumber(n, 0);
         if (SettingValues.collapseComments) {
             listView.setItemAnimator(null);
+            notifyDataSetChanged();
         } else {
             listView.setItemAnimator(new AlphaInAnimator());
+            notifyDataSetChanged();
         }
-        notifyDataSetChanged();
 
     }
 
@@ -1991,10 +1959,11 @@ public class CommentAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder
         int counter = hideNumber(n, 0);
         if (SettingValues.collapseComments) {
             listView.setItemAnimator(null);
+            notifyItemRangeRemoved(i, counter);
         } else {
             listView.setItemAnimator(new AlphaInAnimator());
+            notifyItemRangeRemoved(i, counter);
         }
-        notifyItemRangeRemoved(i, counter);
 
     }
 

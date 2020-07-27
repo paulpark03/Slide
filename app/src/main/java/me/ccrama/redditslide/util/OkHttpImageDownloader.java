@@ -13,6 +13,7 @@ import java.io.IOException;
 import java.io.InputStream;
 
 import me.ccrama.redditslide.Reddit;
+import okhttp3.OkHttpClient;
 import okhttp3.Request;
 import okhttp3.ResponseBody;
 

@@ -12,7 +12,10 @@ import android.graphics.PorterDuff;
 import android.graphics.Typeface;
 import android.graphics.drawable.Drawable;
 import android.os.AsyncTask;
+import android.support.design.widget.Snackbar;
+import android.support.v4.content.ContextCompat;
 import android.text.Html;
+import android.text.InputType;
 import android.text.SpannableStringBuilder;
 import android.text.Spanned;
 import android.text.style.ForegroundColorSpan;
@@ -20,30 +23,16 @@ import android.text.style.RelativeSizeSpan;
 import android.text.style.StyleSpan;
 import android.view.View;
 import android.view.WindowManager;
-import android.widget.EditText;
-import android.widget.ImageView;
-import android.widget.RadioButton;
-import android.widget.RadioGroup;
-import android.widget.TextView;
-import android.widget.Toast;
-
-import androidx.core.content.ContextCompat;
+import android.widget.*;
 
 import com.afollestad.materialdialogs.DialogAction;
 import com.afollestad.materialdialogs.MaterialDialog;
 import com.cocosw.bottomsheet.BottomSheet;
-import com.google.android.material.snackbar.Snackbar;
 import com.sothree.slidinguppanel.SlidingUpPanelLayout;
 
 import net.dean.jraw.ApiException;
 import net.dean.jraw.managers.AccountManager;
-import net.dean.jraw.models.Comment;
-import net.dean.jraw.models.CommentNode;
-import net.dean.jraw.models.DistinguishedStatus;
-import net.dean.jraw.models.Ruleset;
-import net.dean.jraw.models.Submission;
-import net.dean.jraw.models.SubredditRule;
-import net.dean.jraw.models.VoteDirection;
+import net.dean.jraw.models.*;
 
 import java.util.Locale;
 
@@ -293,7 +282,7 @@ public class PopulateShadowboxInfo {
             SpannableStringBuilder commentTitle = new SpannableStringBuilder();
             SpannableStringBuilder level = new SpannableStringBuilder();
             if(!node.isTopLevel()){
-                level.append("[").append(String.valueOf(node.getDepth())).append("] ");
+                level.append("["+node.getDepth() + "] ");
                 level.setSpan(new RelativeSizeSpan(0.7f),0, level.length(),
                         Spanned.SPAN_EXCLUSIVE_EXCLUSIVE);
                 commentTitle.append(level);
@@ -590,7 +579,8 @@ public class PopulateShadowboxInfo {
                                 new AsyncTask<Void, Void, Ruleset>() {
                                     @Override
                                     protected Ruleset doInBackground(Void... voids) {
-                                        return Authentication.reddit.getRules(submission.getSubredditName());
+                                        Ruleset rules = Authentication.reddit.getRules(submission.getSubredditName());
+                                        return rules;
                                     }
 
                                     @Override
@@ -673,7 +663,7 @@ public class PopulateShadowboxInfo {
             Snackbar s = Snackbar.make(contextView, R.string.msg_report_sent, Snackbar.LENGTH_SHORT);
             View view = s.getView();
             TextView tv = view.findViewById(
-                    com.google.android.material.R.id.snackbar_text);
+                    android.support.design.R.id.snackbar_text);
             tv.setTextColor(Color.WHITE);
             s.show();
         }

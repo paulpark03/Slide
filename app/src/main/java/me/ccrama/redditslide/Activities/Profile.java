@@ -8,6 +8,13 @@ import android.content.Intent;
 import android.os.AsyncTask;
 import android.os.Build;
 import android.os.Bundle;
+import android.support.design.widget.Snackbar;
+import android.support.design.widget.TabLayout;
+import android.support.v4.app.Fragment;
+import android.support.v4.app.FragmentManager;
+import android.support.v4.app.FragmentStatePagerAdapter;
+import android.support.v4.view.ViewPager;
+import android.support.v7.widget.PopupMenu;
 import android.text.Spannable;
 import android.text.SpannableStringBuilder;
 import android.text.Spanned;
@@ -28,17 +35,9 @@ import android.widget.LinearLayout;
 import android.widget.TextView;
 import android.widget.Toast;
 
-import androidx.appcompat.widget.PopupMenu;
-import androidx.fragment.app.Fragment;
-import androidx.fragment.app.FragmentManager;
-import androidx.fragment.app.FragmentStatePagerAdapter;
-import androidx.viewpager.widget.ViewPager;
-
 import com.afollestad.materialdialogs.AlertDialogWrapper;
 import com.afollestad.materialdialogs.DialogAction;
 import com.afollestad.materialdialogs.MaterialDialog;
-import com.google.android.material.snackbar.Snackbar;
-import com.google.android.material.tabs.TabLayout;
 
 import net.dean.jraw.fluent.FluentRedditClient;
 import net.dean.jraw.managers.AccountManager;
@@ -97,7 +96,7 @@ public class Profile extends BaseActivityAnim {
                 observer.addOnGlobalLayoutListener(new ViewTreeObserver.OnGlobalLayoutListener() {
                     @Override
                     public void onGlobalLayout() {
-                        tabs.getViewTreeObserver().removeOnGlobalLayoutListener(this);
+                        tabs.getViewTreeObserver().removeGlobalOnLayoutListener(this);
                         tabs.getTabAt(tabIndex).select();
                     }
                 });
@@ -160,7 +159,7 @@ public class Profile extends BaseActivityAnim {
 
         new getProfile().execute(name);
 
-        pager.addOnPageChangeListener(new ViewPager.OnPageChangeListener() {
+        pager.setOnPageChangeListener(new ViewPager.OnPageChangeListener() {
             @Override
             public void onPageScrolled(int position, float positionOffset, int positionOffsetPixels) {
 
@@ -298,7 +297,7 @@ public class Profile extends BaseActivityAnim {
     public class ProfilePagerAdapter extends FragmentStatePagerAdapter {
 
         public ProfilePagerAdapter(FragmentManager fm) {
-            super(fm, BEHAVIOR_RESUME_ONLY_CURRENT_FRAGMENT);
+            super(fm);
 
         }
 
@@ -312,6 +311,9 @@ public class Profile extends BaseActivityAnim {
                 args.putString("id", name);
                 String place;
                 switch (i) {
+                    case 0:
+                        place = "overview";
+                        break;
                     case 1:
                         place = "comments";
                         break;
@@ -333,7 +335,6 @@ public class Profile extends BaseActivityAnim {
                     case 7:
                         place = "hidden";
                         break;
-                    case 0:
                     default:
                         place = "overview";
                 }
@@ -342,7 +343,8 @@ public class Profile extends BaseActivityAnim {
                 f.setArguments(args);
                 return f;
             } else {
-                return new HistoryView();
+                Fragment f = new HistoryView();
+                return f;
             }
 
 
@@ -740,7 +742,7 @@ public class Profile extends BaseActivityAnim {
                                         map.put("account_id", "t2_" + account.getId());
                                         try {
                                             Authentication.reddit.execute(Authentication.reddit.request().post(map)
-                                                    .path("/api/block_user")
+                                                    .path(String.format("/api/block_user"))
                                                     .build());
                                         } catch (Exception ex) {
                                             return false;

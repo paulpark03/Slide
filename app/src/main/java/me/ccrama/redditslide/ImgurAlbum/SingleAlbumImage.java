@@ -3,7 +3,6 @@ package me.ccrama.redditslide.ImgurAlbum;
 /**
  * Created by carlo_000 on 5/3/2016.
  */
-
 import com.fasterxml.jackson.annotation.JsonAnyGetter;
 import com.fasterxml.jackson.annotation.JsonAnySetter;
 import com.fasterxml.jackson.annotation.JsonIgnore;

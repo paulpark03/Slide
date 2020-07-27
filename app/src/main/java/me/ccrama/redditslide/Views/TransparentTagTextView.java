@@ -41,8 +41,8 @@ public class TransparentTagTextView extends TextView {
         mSetBoundsOnSizeAvailable = true;
         mPaint = new Paint();
         super.setTextColor(Color.BLACK);
-        super.setBackground(new ColorDrawable(Color.TRANSPARENT));
-        setBackground(context.getResources().getDrawable(R.drawable.flairback));
+        super.setBackgroundDrawable(new ColorDrawable(Color.TRANSPARENT));
+        setBackgroundDrawable(context.getResources().getDrawable(R.drawable.flairback));
     }
 
 
@@ -50,13 +50,13 @@ public class TransparentTagTextView extends TextView {
     public void resetBackground(Context context) {
         mPaint = new Paint();
         super.setTextColor(Color.BLACK);
-        super.setBackground(new ColorDrawable(Color.TRANSPARENT));
+        super.setBackgroundDrawable(new ColorDrawable(Color.TRANSPARENT));
         backdrop = context.getResources().getDrawable(R.drawable.flairback);
-        setBackground(backdrop);
+        setBackgroundDrawable(backdrop);
     }
 
     @Override
-    public void setBackground(Drawable bg) {
+    public void setBackgroundDrawable(Drawable bg) {
         if(bg != null) {
             mBackground = bg;
             int w = bg.getIntrinsicWidth();
@@ -81,7 +81,7 @@ public class TransparentTagTextView extends TextView {
 
     @Override
     public void setBackgroundColor(int color) {
-        setBackground(new ColorDrawable(color));
+        setBackgroundDrawable(new ColorDrawable(color));
     }
 
     @Override
@@ -102,7 +102,7 @@ public class TransparentTagTextView extends TextView {
 
     @Override
     protected void onDraw(Canvas canvas) {
-        super.setBackground(backdrop);
+        super.setBackgroundDrawable(backdrop);
 
         // Draw background
         mBackground.draw(mBackgroundCanvas);

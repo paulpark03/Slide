@@ -3,12 +3,11 @@ package me.ccrama.redditslide.Adapters;
 import android.content.Context;
 import android.graphics.Bitmap;
 import android.os.AsyncTask;
+import android.support.v7.app.ActionBar;
 import android.text.Html;
 import android.util.Log;
 import android.view.View;
 import android.widget.Toast;
-
-import androidx.appcompat.app.ActionBar;
 
 import com.nostra13.universalimageloader.core.assist.FailReason;
 import com.nostra13.universalimageloader.core.listener.ImageLoadingListener;
@@ -19,6 +18,7 @@ import net.dean.jraw.paginators.DomainPaginator;
 import net.dean.jraw.paginators.Paginator;
 import net.dean.jraw.paginators.SubredditPaginator;
 
+import java.net.UnknownHostException;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.LinkedHashSet;
@@ -60,7 +60,6 @@ public class SubredditPosts implements PostLoader {
     public  boolean          offline;
     public  boolean          forced;
     public  boolean          loading;
-    public  boolean          error;
     private Paginator        paginator;
     public  OfflineSubreddit cached;
     Context c;
@@ -302,9 +301,7 @@ public class SubredditPosts implements PostLoader {
 
         @Override
         public void onPostExecute(final List<Submission> submissions) {
-            boolean success = true;
             loading = false;
-
             if (error != null) {
                 if (error instanceof NetworkException) {
                     NetworkException e = (NetworkException) error;
@@ -326,7 +323,11 @@ public class SubredditPosts implements PostLoader {
                                 Toast.LENGTH_SHORT).show();
                     }
                 }
-                success = false;
+                if (error.getCause() instanceof UnknownHostException) {
+                    Toast.makeText(context, "Loading failed, please check your internet connection",
+                            Toast.LENGTH_LONG).show();
+                }
+                displayer.updateError();
             } else if (submissions != null && !submissions.isEmpty()) {
                 if (displayer instanceof SubmissionsView
                         && ((SubmissionsView) displayer).adapter.isError) {
@@ -390,11 +391,9 @@ public class SubredditPosts implements PostLoader {
                 } else if (!nomore) {
                     // error
                     LogUtil.v("Setting error");
-                    success = false;
+                    displayer.updateError();
                 }
             }
-
-            SubredditPosts.this.error = !success;
         }
 
         @Override
@@ -523,9 +522,9 @@ public class SubredditPosts implements PostLoader {
         int i = 0;
         for (String s : all) {
             String[] split = s.split(",");
-            titles[i] = (Long.parseLong(split[1]) == 0 ? c.getString(
+            titles[i] = (Long.valueOf(split[1]) == 0 ? c.getString(
                     R.string.settings_backup_submission_only)
-                    : TimeUtils.getTimeAgo(Long.parseLong(split[1]), c) + c.getString(
+                    : TimeUtils.getTimeAgo(Long.valueOf(split[1]), c) + c.getString(
                             R.string.settings_backup_comments));
             base[i] = s;
             i++;
@@ -568,7 +567,7 @@ public class SubredditPosts implements PostLoader {
                                             displayer.updateOfflineError();
                                         }
                                         // update offline
-                                        displayer.updateOffline(posts, Long.parseLong(s2[1]));
+                                        displayer.updateOffline(posts, Long.valueOf(s2[1]));
                                     }
                                 }.executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR);
                                 return true;

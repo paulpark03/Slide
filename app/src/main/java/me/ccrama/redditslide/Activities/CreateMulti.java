@@ -21,6 +21,8 @@ import android.content.DialogInterface;
 import android.graphics.PorterDuff;
 import android.os.AsyncTask;
 import android.os.Bundle;
+import android.support.v7.widget.LinearLayoutManager;
+import android.support.v7.widget.RecyclerView;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.Menu;
@@ -31,9 +33,6 @@ import android.view.ViewGroup;
 import android.widget.EditText;
 import android.widget.TextView;
 import android.widget.Toast;
-
-import androidx.recyclerview.widget.LinearLayoutManager;
-import androidx.recyclerview.widget.RecyclerView;
 
 import com.afollestad.materialdialogs.AlertDialogWrapper;
 import com.afollestad.materialdialogs.DialogAction;
@@ -122,8 +121,10 @@ public class CreateMulti extends BaseActivityAnim {
 
     public void showSelectDialog() {
         //List of all subreddits of the multi
-        List<String> multiSubs = new ArrayList<>(subs);
-        List<String> sorted = new ArrayList<>(subs);
+        List<String> sorted = new ArrayList<>();
+        List<String> multiSubs = new ArrayList<>();
+        multiSubs.addAll(subs);
+        sorted.addAll(subs);
 
         //Add all user subs that aren't already on the list
         for (String s : UserSubscriptions.sort(UserSubscriptions.getSubscriptions(this))) {
@@ -159,9 +160,10 @@ public class CreateMulti extends BaseActivityAnim {
         }
 
         //Convert List back to Array
-        all = list.toArray(new String[0]);
+        all = list.toArray(new String[list.size()]);
 
-        final ArrayList<String> toCheck = new ArrayList<>(subs);
+        final ArrayList<String> toCheck = new ArrayList<>();
+        toCheck.addAll(subs);
         new AlertDialogWrapper.Builder(this)
                 .setMultiChoiceItems(all, checked, new DialogInterface.OnMultiChoiceClickListener() {
                     @Override

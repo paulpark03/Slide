@@ -13,6 +13,11 @@ import android.graphics.drawable.Drawable;
 import android.os.AsyncTask;
 import android.os.Bundle;
 import android.os.Environment;
+import android.support.v4.app.Fragment;
+import android.support.v4.app.FragmentManager;
+import android.support.v4.app.FragmentStatePagerAdapter;
+import android.support.v4.view.ViewPager;
+import android.support.v7.widget.Toolbar;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.Menu;
@@ -28,12 +33,6 @@ import android.widget.LinearLayout;
 import android.widget.ProgressBar;
 import android.widget.TextView;
 import android.widget.Toast;
-
-import androidx.appcompat.widget.Toolbar;
-import androidx.fragment.app.Fragment;
-import androidx.fragment.app.FragmentManager;
-import androidx.fragment.app.FragmentStatePagerAdapter;
-import androidx.viewpager.widget.ViewPager;
 
 import com.afollestad.materialdialogs.AlertDialogWrapper;
 import com.cocosw.bottomsheet.BottomSheet;
@@ -70,8 +69,8 @@ import me.ccrama.redditslide.SettingValues;
 import me.ccrama.redditslide.SpoilerRobotoTextView;
 import me.ccrama.redditslide.Tumblr.Photo;
 import me.ccrama.redditslide.Tumblr.TumblrUtils;
-import me.ccrama.redditslide.Views.ExoVideoView;
 import me.ccrama.redditslide.Views.ImageSource;
+import me.ccrama.redditslide.Views.MediaVideoView;
 import me.ccrama.redditslide.Views.SubsamplingScaleImageView;
 import me.ccrama.redditslide.Views.ToolbarColorizeHelper;
 import me.ccrama.redditslide.Visuals.FontPreferences;
@@ -143,7 +142,6 @@ public class TumblrPager extends FullScreenActivity
 
     @Override
     protected void onActivityResult(int requestCode, int resultCode, Intent data) {
-        super.onActivityResult(requestCode, resultCode, data);
         if (requestCode == 3) {
             Reddit.appRestart.edit().putBoolean("tutorialSwipe", true).apply();
         }
@@ -239,7 +237,7 @@ public class TumblrPager extends FullScreenActivity
                     d.show();
                 }
             });
-            p.addOnPageChangeListener(new ViewPager.OnPageChangeListener() {
+            p.setOnPageChangeListener(new ViewPager.OnPageChangeListener() {
                 @Override
                 public void onPageScrolled(int position, float positionOffset,
                         int positionOffsetPixels) {
@@ -285,14 +283,15 @@ public class TumblrPager extends FullScreenActivity
 
     public class AlbumViewPager extends FragmentStatePagerAdapter {
         public AlbumViewPager(FragmentManager m) {
-            super(m, BEHAVIOR_RESUME_ONLY_CURRENT_FRAGMENT);
+            super(m);
         }
 
         @Override
         public Fragment getItem(int i) {
 
             if (i == 0) {
-                return new BlankFragment();
+                Fragment blankFragment = new BlankFragment();
+                return blankFragment;
             }
 
             i--;
@@ -348,13 +347,13 @@ public class TumblrPager extends FullScreenActivity
             if (this.isVisible()) {
                 if (!isVisibleToUser)   // If we are becoming invisible, then...
                 {
-                    ((ExoVideoView) gif).pause();
+                    ((MediaVideoView) gif).pause();
                     gif.setVisibility(View.GONE);
                 }
 
                 if (isVisibleToUser) // If we are becoming visible, then...
                 {
-                    ((ExoVideoView) gif).play();
+                    ((MediaVideoView) gif).start();
                     gif.setVisibility(View.VISIBLE);
 
                 }
@@ -372,17 +371,18 @@ public class TumblrPager extends FullScreenActivity
             gif = rootView.findViewById(R.id.gif);
 
             gif.setVisibility(View.VISIBLE);
-            final ExoVideoView v = (ExoVideoView) gif;
+            final MediaVideoView v = (MediaVideoView) gif;
             v.clearFocus();
 
             final String url = ((TumblrPager) getActivity()).images.get(i).getOriginalSize().getUrl();
 
-            new GifUtils.AsyncLoadGif(getActivity(), rootView.findViewById(R.id.gif), loader, null, new Runnable() {
+            new GifUtils.AsyncLoadGif(getActivity(),
+                    (MediaVideoView) rootView.findViewById(R.id.gif), loader, null, new Runnable() {
                 @Override
                 public void run() {
 
                 }
-            }, false, true, (TextView) rootView.findViewById(R.id.size),  ((TumblrPager) getActivity()).subreddit).execute(url);
+            }, false, true, true, (TextView) rootView.findViewById(R.id.size),  ((TumblrPager) getActivity()).subreddit).execute(url);
             rootView.findViewById(R.id.more).setOnClickListener(new View.OnClickListener() {
                 @Override
                 public void onClick(View v) {
@@ -745,7 +745,7 @@ public class TumblrPager extends FullScreenActivity
     }
 
     @Override
-    public void onFolderSelection(FolderChooserDialogCreate dialog, File folder, boolean isSaveToLocation) {
+    public void onFolderSelection(FolderChooserDialogCreate dialog, File folder) {
         if (folder != null) {
             Reddit.appRestart.edit().putString("imagelocation", folder.getAbsolutePath()).apply();
             Toast.makeText(this,

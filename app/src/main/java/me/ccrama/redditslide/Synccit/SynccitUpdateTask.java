@@ -2,6 +2,9 @@ package me.ccrama.redditslide.Synccit;
 
 import org.json.JSONObject;
 
+import java.io.InputStream;
+import java.util.Scanner;
+
 /**
  * https://github.com/drakeapps/synccit#example-json-update-call
  */

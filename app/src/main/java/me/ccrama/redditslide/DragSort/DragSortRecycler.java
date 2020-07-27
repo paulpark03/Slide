@@ -29,12 +29,11 @@ import android.graphics.Canvas;
 import android.graphics.Paint;
 import android.graphics.Rect;
 import android.graphics.drawable.BitmapDrawable;
+import android.support.annotation.Nullable;
+import android.support.v7.widget.RecyclerView;
 import android.util.Log;
 import android.view.MotionEvent;
 import android.view.View;
-
-import androidx.annotation.Nullable;
-import androidx.recyclerview.widget.RecyclerView;
 
 import me.ccrama.redditslide.R;
 
@@ -127,7 +126,7 @@ class DragSortRecycler extends RecyclerView.ItemDecoration implements RecyclerVi
 
         debugLog("View top = " + view.getTop());
         if (selectedDragItemPos != -1) {
-            int itemPos = rv.getChildAdapterPosition(view);
+            int itemPos = rv.getChildPosition(view);
             debugLog("itemPos =" + itemPos);
 
             if (!canDragOver(itemPos)) {
@@ -200,7 +199,7 @@ class DragSortRecycler extends RecyclerView.ItemDecoration implements RecyclerVi
             if (view.getVisibility() != View.VISIBLE)
                 continue;
 
-            int itemPos = rv.getChildAdapterPosition(view);
+            int itemPos = rv.getChildPosition(view);
 
             if (itemPos == selectedDragItemPos) //Don't check against itself!
                 continue;
@@ -295,7 +294,7 @@ class DragSortRecycler extends RecyclerView.ItemDecoration implements RecyclerVi
                 fingerOffsetInViewY = fingerAnchorY - itemView.getTop();
                 fingerY = fingerAnchorY;
 
-                selectedDragItemPos = rv.getChildAdapterPosition(itemView);
+                selectedDragItemPos = rv.getChildPosition(itemView);
                 debugLog("selectedDragItemPos = " + selectedDragItemPos);
 
                 return true;

@@ -1,4 +1,4 @@
-<androidx.cardview.widget.CardView xmlns:android="http://schemas.android.com/apk/res/android"
+<android.support.v7.widget.CardView xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     android:id="@+id/top"
     android:layout_width="match_parent"
@@ -72,11 +72,11 @@
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:padding="16dp"/>
-        <androidx.appcompat.widget.AppCompatCheckBox
+        <android.support.v7.widget.AppCompatCheckBox
                 android:layout_width="match_parent"
                 android:text="Subscribed"
                 android:id="@+id/subscribed"
                 android:layout_height="wrap_content"/>
     </LinearLayout>
 
-</androidx.cardview.widget.CardView>
+</android.support.v7.widget.CardView>

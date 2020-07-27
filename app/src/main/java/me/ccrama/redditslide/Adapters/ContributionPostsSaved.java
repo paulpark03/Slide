@@ -9,6 +9,7 @@ import java.util.ArrayList;
 import me.ccrama.redditslide.Authentication;
 import me.ccrama.redditslide.HasSeen;
 import me.ccrama.redditslide.PostMatch;
+import me.ccrama.redditslide.Reddit;
 import me.ccrama.redditslide.SettingValues;
 
 /**

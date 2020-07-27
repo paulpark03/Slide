@@ -36,6 +36,24 @@ import android.os.Build;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Parcelable;
+import android.support.annotation.DrawableRes;
+import android.support.annotation.NonNull;
+import android.support.design.widget.Snackbar;
+import android.support.design.widget.TabLayout;
+import android.support.v4.app.ActivityCompat;
+import android.support.v4.app.Fragment;
+import android.support.v4.app.FragmentManager;
+import android.support.v4.app.FragmentStatePagerAdapter;
+import android.support.v4.content.ContextCompat;
+import android.support.v4.content.res.ResourcesCompat;
+import android.support.v4.view.GravityCompat;
+import android.support.v4.view.ViewPager;
+import android.support.v4.view.animation.FastOutSlowInInterpolator;
+import android.support.v4.widget.DrawerLayout;
+import android.support.v4.widget.ViewDragHelper;
+import android.support.v7.app.ActionBarDrawerToggle;
+import android.support.v7.view.ContextThemeWrapper;
+import android.support.v7.widget.*;
 import android.text.Editable;
 import android.text.Spannable;
 import android.text.TextWatcher;
@@ -69,34 +87,10 @@ import android.widget.RelativeLayout;
 import android.widget.TextView;
 import android.widget.Toast;
 
-import androidx.annotation.DrawableRes;
-import androidx.annotation.NonNull;
-import androidx.appcompat.app.ActionBarDrawerToggle;
-import androidx.appcompat.view.ContextThemeWrapper;
-import androidx.appcompat.widget.AppCompatCheckBox;
-import androidx.appcompat.widget.PopupMenu;
-import androidx.appcompat.widget.SwitchCompat;
-import androidx.appcompat.widget.Toolbar;
-import androidx.cardview.widget.CardView;
-import androidx.core.app.ActivityCompat;
-import androidx.core.content.ContextCompat;
-import androidx.core.content.res.ResourcesCompat;
-import androidx.core.view.GravityCompat;
-import androidx.customview.widget.ViewDragHelper;
-import androidx.drawerlayout.widget.DrawerLayout;
-import androidx.fragment.app.Fragment;
-import androidx.fragment.app.FragmentManager;
-import androidx.fragment.app.FragmentStatePagerAdapter;
-import androidx.interpolator.view.animation.FastOutSlowInInterpolator;
-import androidx.recyclerview.widget.LinearLayoutManager;
-import androidx.viewpager.widget.ViewPager;
-
 import com.afollestad.materialdialogs.AlertDialogWrapper;
 import com.afollestad.materialdialogs.DialogAction;
 import com.afollestad.materialdialogs.MaterialDialog;
 import com.fasterxml.jackson.databind.JsonNode;
-import com.google.android.material.snackbar.Snackbar;
-import com.google.android.material.tabs.TabLayout;
 import com.lusfold.androidkeyvaluestore.KVStore;
 import com.lusfold.androidkeyvaluestore.core.KVManger;
 
@@ -149,6 +143,7 @@ import me.ccrama.redditslide.ColorPreferences;
 import me.ccrama.redditslide.CommentCacheAsync;
 import me.ccrama.redditslide.Constants;
 import me.ccrama.redditslide.ContentType;
+import me.ccrama.redditslide.FDroid;
 import me.ccrama.redditslide.Fragments.CommentPage;
 import me.ccrama.redditslide.Fragments.DrawerItemsDialog;
 import me.ccrama.redditslide.Fragments.SettingsGeneralFragment;
@@ -340,7 +335,7 @@ public class MainActivity extends BaseActivity
             findViewById(R.id.close_search_toolbar).performClick(); //close GO_TO_SUB_FIELD
         } else if (SettingValues.backButtonBehavior
                 == Constants.BackButtonBehaviorOptions.OpenDrawer.getValue()) {
-            drawerLayout.openDrawer(GravityCompat.START);
+            drawerLayout.openDrawer(Gravity.START);
         } else if (SettingValues.backButtonBehavior
                 == Constants.BackButtonBehaviorOptions.GotoFirst.getValue()) {
             pager.setCurrentItem(0);
@@ -374,11 +369,11 @@ public class MainActivity extends BaseActivity
         changed = false;
         if (!SettingValues.synccitName.isEmpty()) {
             new MySynccitUpdateTask().execute(
-                    SynccitRead.newVisited.toArray(new String[0]));
+                    SynccitRead.newVisited.toArray(new String[SynccitRead.newVisited.size()]));
         }
         if (Authentication.isLoggedIn
                 && Authentication.me != null
-                //This is causing a crash, might not be important since the storeVisits will just not do anything without gold && Authentication.me.hasGold()
+                && Authentication.me.hasGold()
                 && !SynccitRead.newVisited.isEmpty()) {
             new AsyncTask<Void, Void, Void>() {
                 @Override
@@ -410,47 +405,50 @@ public class MainActivity extends BaseActivity
     }
 
     @Override
-    public void onRequestPermissionsResult(int requestCode, String[] permissions,
+    public void onRequestPermissionsResult(int requestCode, String permissions[],
             int[] grantResults) {
-        if (requestCode == 1) {// If request is cancelled, the result arrays are empty.
-            if (grantResults.length > 0
-                    && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
+        switch (requestCode) {
+            case 1: {
+                // If request is cancelled, the result arrays are empty.
+                if (grantResults.length > 0
+                        && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
 
-                // permission was granted, yay! Do the
-                // contacts-related task you need to do.
+                    // permission was granted, yay! Do the
+                    // contacts-related task you need to do.
 
-            } else {
+                } else {
 
-                runOnUiThread(new Runnable() {
-                    @Override
-                    public void run() {
-                        new AlertDialogWrapper.Builder(MainActivity.this).setTitle(
-                                R.string.err_permission)
-                                .setMessage(R.string.err_permission_msg)
-                                .setPositiveButton(R.string.btn_yes,
-                                        new DialogInterface.OnClickListener() {
-                                            @Override
-                                            public void onClick(DialogInterface dialog,
+                    runOnUiThread(new Runnable() {
+                        @Override
+                        public void run() {
+                            new AlertDialogWrapper.Builder(MainActivity.this).setTitle(
+                                    R.string.err_permission)
+                                    .setMessage(R.string.err_permission_msg)
+                                    .setPositiveButton(R.string.btn_yes,
+                                            new DialogInterface.OnClickListener() {
+                                                @Override
+                                                public void onClick(DialogInterface dialog,
                                                         int which) {
-                                                ActivityCompat.requestPermissions(
-                                                        MainActivity.this, new String[]{
-                                                                Manifest.permission.WRITE_EXTERNAL_STORAGE
-                                                        }, 1);
+                                                    ActivityCompat.requestPermissions(
+                                                            MainActivity.this, new String[]{
+                                                                    Manifest.permission.WRITE_EXTERNAL_STORAGE
+                                                            }, 1);
 
-                                            }
-                                        })
-                                .setNegativeButton(R.string.btn_no,
-                                        new DialogInterface.OnClickListener() {
-                                            @Override
-                                            public void onClick(DialogInterface dialog,
+                                                }
+                                            })
+                                    .setNegativeButton(R.string.btn_no,
+                                            new DialogInterface.OnClickListener() {
+                                                @Override
+                                                public void onClick(DialogInterface dialog,
                                                         int which) {
-                                                dialog.dismiss();
-                                            }
-                                        })
-                                .show();
-                    }
-                });
+                                                    dialog.dismiss();
+                                                }
+                                            })
+                                    .show();
+                        }
+                    });
 
+                }
             }
 
             // other 'case' lines to check for other
@@ -489,6 +487,8 @@ public class MainActivity extends BaseActivity
             if (SettingValues.commentVolumeNav) {
                 switch (keyCode) {
                     case KeyEvent.KEYCODE_VOLUME_UP:
+                        return ((OverviewPagerAdapterComment) pager.getAdapter()).mCurrentComments.onKeyDown(
+                                keyCode, event);
                     case KeyEvent.KEYCODE_VOLUME_DOWN:
                         return ((OverviewPagerAdapterComment) pager.getAdapter()).mCurrentComments.onKeyDown(
                                 keyCode, event);
@@ -500,10 +500,12 @@ public class MainActivity extends BaseActivity
             }
         }
         if (event.getAction() != KeyEvent.ACTION_DOWN) return super.dispatchKeyEvent(event);
-        if (keyCode == KeyEvent.KEYCODE_SEARCH) {
-            return onKeyDown(keyCode, event);
+        switch (keyCode) {
+            case KeyEvent.KEYCODE_SEARCH:
+                return onKeyDown(keyCode, event);
+            default:
+                return super.dispatchKeyEvent(event);
         }
-        return super.dispatchKeyEvent(event);
     }
 
     @Override
@@ -662,7 +664,7 @@ public class MainActivity extends BaseActivity
                     Snackbar s = Snackbar.make(findViewById(R.id.anchor),
                             getString(R.string.friends_sort_error), Snackbar.LENGTH_SHORT);
                     View view = s.getView();
-                    TextView tv = view.findViewById(com.google.android.material.R.id.snackbar_text);
+                    TextView tv = view.findViewById(android.support.design.R.id.snackbar_text);
                     tv.setTextColor(Color.WHITE);
                     s.show();
                 } else {
@@ -1069,7 +1071,7 @@ public class MainActivity extends BaseActivity
                                             });
                                     View view = snack.getView();
                                     TextView tv = view.findViewById(
-                                            com.google.android.material.R.id.snackbar_text);
+                                            android.support.design.R.id.snackbar_text);
                                     tv.setTextColor(Color.WHITE);
                                     snack.show();
                                 }
@@ -1120,7 +1122,11 @@ public class MainActivity extends BaseActivity
                         @Override
                         public void onGlobalLayout() {
                             headerHeight = header.getHeight();
-                            header.getViewTreeObserver().removeOnGlobalLayoutListener(this);
+                            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.JELLY_BEAN) {
+                                header.getViewTreeObserver().removeOnGlobalLayoutListener(this);
+                            } else {
+                                header.getViewTreeObserver().removeGlobalOnLayoutListener(this);
+                            }
                         }
                     });
         }
@@ -1239,7 +1245,7 @@ public class MainActivity extends BaseActivity
         }
 
 
-        if (!BuildConfig.isFDroid && Authentication.isLoggedIn && NetworkUtil.isConnected(MainActivity.this))
+        if (!FDroid.isFDroid && Authentication.isLoggedIn && NetworkUtil.isConnected(MainActivity.this))
 
         {
             // Display an snackbar that asks the user to rate the app after this
@@ -2231,7 +2237,7 @@ public class MainActivity extends BaseActivity
                     }
                 };
 
-        drawerLayout.addDrawerListener(actionBarDrawerToggle);
+        drawerLayout.setDrawerListener(actionBarDrawerToggle);
 
         actionBarDrawerToggle.syncState();
         header.findViewById(R.id.back).setBackgroundColor(Palette.getColor("alsdkfjasld"));
@@ -2389,7 +2395,7 @@ public class MainActivity extends BaseActivity
 
             //whether or not this subreddit was in the keySet
             boolean isNotified =
-                    subThresholds.containsKey(subreddit.getDisplayName().toLowerCase(Locale.ENGLISH));
+                    subThresholds.keySet().contains(subreddit.getDisplayName().toLowerCase(Locale.ENGLISH));
             ((AppCompatCheckBox) findViewById(R.id.notify_posts_state)).setChecked(isNotified);
         } else {
             findViewById(R.id.sidebar_text).setVisibility(View.GONE);
@@ -2432,7 +2438,7 @@ public class MainActivity extends BaseActivity
                                                         try {
                                                             final String multiName = multis.keySet()
                                                                     .toArray(
-                                                                            new String[0])[which];
+                                                                            new String[multis.size()])[which];
                                                             List<String> subs =
                                                                     new ArrayList<String>();
                                                             for (MultiSubreddit sub : multis.get(
@@ -2462,7 +2468,7 @@ public class MainActivity extends BaseActivity
                                                                                     Snackbar.LENGTH_LONG);
                                                                     View view = s.getView();
                                                                     TextView tv = view.findViewById(
-                                                                            com.google.android.material.R.id.snackbar_text);
+                                                                            android.support.design.R.id.snackbar_text);
                                                                     tv.setTextColor(Color.WHITE);
                                                                     s.show();
                                                                 }
@@ -2656,7 +2662,7 @@ public class MainActivity extends BaseActivity
                                                                                     TextView tv =
                                                                                             view
                                                                                                     .findViewById(
-                                                                                                            com.google.android.material.R.id.snackbar_text);
+                                                                                                            android.support.design.R.id.snackbar_text);
                                                                                     tv.setTextColor(
                                                                                             Color.WHITE);
                                                                                     s.show();
@@ -2707,7 +2713,7 @@ public class MainActivity extends BaseActivity
                                                                 Snackbar.LENGTH_LONG);
                                                 View view = s.getView();
                                                 TextView tv = view.findViewById(
-                                                        com.google.android.material.R.id.snackbar_text);
+                                                        android.support.design.R.id.snackbar_text);
                                                 tv.setTextColor(Color.WHITE);
                                                 s.show();
                                             }
@@ -2758,7 +2764,7 @@ public class MainActivity extends BaseActivity
                                                                                     TextView tv =
                                                                                             view
                                                                                                     .findViewById(
-                                                                                                            com.google.android.material.R.id.snackbar_text);
+                                                                                                            android.support.design.R.id.snackbar_text);
                                                                                     tv.setTextColor(
                                                                                             Color.WHITE);
                                                                                     s.show();
@@ -2808,7 +2814,7 @@ public class MainActivity extends BaseActivity
                                                         Snackbar.LENGTH_LONG);
                                                 View view = s.getView();
                                                 TextView tv = view.findViewById(
-                                                        com.google.android.material.R.id.snackbar_text);
+                                                        android.support.design.R.id.snackbar_text);
                                                 tv.setTextColor(Color.WHITE);
                                                 s.show();
                                             }
@@ -2824,10 +2830,11 @@ public class MainActivity extends BaseActivity
                 public void onClick(View v) {
                     if (!currentlySubbed) {
                         doSubscribe();
+                        doSubscribeButtonText(currentlySubbed, subscribe);
                     } else {
                         doUnsubscribe();
+                        doSubscribeButtonText(currentlySubbed, subscribe);
                     }
-                    doSubscribeButtonText(currentlySubbed, subscribe);
                 }
 
 
@@ -2854,15 +2861,6 @@ public class MainActivity extends BaseActivity
                             (ImageView) findViewById(R.id.subimage));
         } else {
             findViewById(R.id.subimage).setVisibility(View.GONE);
-        }
-        String bannerImage = subreddit.getBannerImage();
-        if (bannerImage != null && !bannerImage.isEmpty()) {
-            findViewById(R.id.sub_banner).setVisibility(View.VISIBLE);
-            ((Reddit) getApplication()).getImageLoader()
-                    .displayImage(bannerImage,
-                            (ImageView) findViewById(R.id.sub_banner));
-        } else {
-            findViewById(R.id.sub_banner).setVisibility(View.GONE);
         }
         ((TextView) findViewById(R.id.subscribers)).setText(
                 getString(R.string.subreddit_subscribers_string,
@@ -3261,7 +3259,7 @@ public class MainActivity extends BaseActivity
                                                                                                     tv =
                                                                                                     view
                                                                                                             .findViewById(
-                                                                                                                    com.google.android.material.R.id.snackbar_text);
+                                                                                                                    android.support.design.R.id.snackbar_text);
                                                                                             tv.setTextColor(
                                                                                                     Color.WHITE);
                                                                                             s.show();
@@ -3325,7 +3323,7 @@ public class MainActivity extends BaseActivity
                                                                 if (s != null) {
                                                                     View view = s.getView();
                                                                     TextView tv = view.findViewById(
-                                                                            com.google.android.material.R.id.snackbar_text);
+                                                                            android.support.design.R.id.snackbar_text);
                                                                     tv.setTextColor(Color.WHITE);
                                                                     s.show();
                                                                 }
@@ -3455,8 +3453,8 @@ public class MainActivity extends BaseActivity
      * @param CLOSE_BUTTON           button that clears the search and closes the search UI
      */
     public void enterAnimationsForToolbarSearch(final long ANIMATION_DURATION,
-                                                final CardView SUGGESTIONS_BACKGROUND, final AutoCompleteTextView GO_TO_SUB_FIELD,
-                                                final ImageView CLOSE_BUTTON) {
+            final CardView SUGGESTIONS_BACKGROUND, final AutoCompleteTextView GO_TO_SUB_FIELD,
+            final ImageView CLOSE_BUTTON) {
         SUGGESTIONS_BACKGROUND.animate()
                 .translationY(headerHeight)
                 .setInterpolator(new AccelerateDecelerateInterpolator())
@@ -3753,11 +3751,11 @@ public class MainActivity extends BaseActivity
         if (adapter instanceof OverviewPagerAdapterComment) {
             pager.setAdapter(null);
             adapter = new OverviewPagerAdapterComment(getSupportFragmentManager());
+            pager.setAdapter(adapter);
         } else {
             adapter = new OverviewPagerAdapter(getSupportFragmentManager());
+            pager.setAdapter(adapter);
         }
-        pager.setAdapter(adapter);
-
         reloadItemNumber = -2;
         shouldLoad = usedArray.get(current);
         pager.setCurrentItem(current);
@@ -3952,7 +3950,9 @@ public class MainActivity extends BaseActivity
                         drawerSubList);
         drawerSubList.setAdapter(sideArrayAdapter);
 
-        if ((SettingValues.subredditSearchMethod
+        if ((SettingValues.subredditSearchMethod == Constants.SUBREDDIT_SEARCH_METHOD_DRAWER
+                || SettingValues.subredditSearchMethod == Constants.SUBREDDIT_SEARCH_METHOD_BOTH
+                || SettingValues.subredditSearchMethod
                 != Constants.SUBREDDIT_SEARCH_METHOD_TOOLBAR)) {
             drawerSearch = headerMain.findViewById(R.id.sort);
             drawerSearch.setVisibility(View.VISIBLE);
@@ -4068,7 +4068,7 @@ public class MainActivity extends BaseActivity
 
     public void setToolbarClick() {
         if (mTabLayout != null) {
-            mTabLayout.addOnTabSelectedListener(
+            mTabLayout.setOnTabSelectedListener(
                     new TabLayout.ViewPagerOnTabSelectedListener(pager) {
                         @Override
                         public void onTabReselected(TabLayout.Tab tab) {
@@ -4186,10 +4186,9 @@ public class MainActivity extends BaseActivity
                         Intent sub = new Intent(Intent.ACTION_VIEW, new Uri.Builder().build(), this,
                                 SubredditView.class);
                         sub.putExtra(SubredditView.EXTRA_SUBREDDIT, s);
-                        String frontpage = (s.equalsIgnoreCase("frontpage") ? "" : "/r/") + s;
                         shortcuts.add(new ShortcutInfo.Builder(this, "sub" + s).setShortLabel(
-                                frontpage)
-                                .setLongLabel(frontpage)
+                                (s.equalsIgnoreCase("frontpage") ? "" : "/r/") + s)
+                                .setLongLabel((s.equalsIgnoreCase("frontpage") ? "" : "/r/") + s)
                                 .setIcon(getIcon(s, R.drawable.sub))
                                 .setIntent(sub)
                                 .build());
@@ -4213,10 +4212,9 @@ public class MainActivity extends BaseActivity
                         Intent sub = new Intent(Intent.ACTION_VIEW, new Uri.Builder().build(), this,
                                 SubredditView.class);
                         sub.putExtra(SubredditView.EXTRA_SUBREDDIT, s);
-                        String frontpage = (s.equalsIgnoreCase("frontpage") ? "" : "/r/") + s;
                         new ShortcutInfo.Builder(this, "sub" + s).setShortLabel(
-                                frontpage)
-                                .setLongLabel(frontpage)
+                                (s.equalsIgnoreCase("frontpage") ? "" : "/r/") + s)
+                                .setLongLabel((s.equalsIgnoreCase("frontpage") ? "" : "/r/") + s)
                                 .setIcon(getIcon(s, R.drawable.sub))
                                 .setIntent(sub)
                                 .build();
@@ -4397,7 +4395,7 @@ public class MainActivity extends BaseActivity
                 observer.addOnGlobalLayoutListener(new ViewTreeObserver.OnGlobalLayoutListener() {
                     @Override
                     public void onGlobalLayout() {
-                        mTabLayout.getViewTreeObserver().removeOnGlobalLayoutListener(this);
+                        mTabLayout.getViewTreeObserver().removeGlobalOnLayoutListener(this);
                         mTabLayout.getTabAt(tabIndex).select();
                     }
                 });
@@ -4450,9 +4448,7 @@ public class MainActivity extends BaseActivity
      */
     private void setupSubredditSearchToolbar() {
         if (!NetworkUtil.isConnected(this)) {
-            if (findViewById(R.id.drawer_divider) != null) {
-                findViewById(R.id.drawer_divider).setVisibility(View.GONE);
-            }
+            findViewById(R.id.drawer_divider).setVisibility(View.GONE);
         } else {
             if ((SettingValues.subredditSearchMethod == Constants.SUBREDDIT_SEARCH_METHOD_TOOLBAR
                     || SettingValues.subredditSearchMethod
@@ -4939,7 +4935,7 @@ public class MainActivity extends BaseActivity
                             });
 
                     View view = s.getView();
-                    TextView tv = view.findViewById(com.google.android.material.R.id.snackbar_text);
+                    TextView tv = view.findViewById(android.support.design.R.id.snackbar_text);
                     tv.setTextColor(Color.WHITE);
                     s.show();
                 }
@@ -4977,7 +4973,7 @@ public class MainActivity extends BaseActivity
         protected SubmissionsView mCurrentFragment;
 
         public OverviewPagerAdapter(FragmentManager fm) {
-            super(fm, BEHAVIOR_RESUME_ONLY_CURRENT_FRAGMENT);
+            super(fm);
 
             pager.clearOnPageChangeListeners();
             pager.addOnPageChangeListener(new ViewPager.OnPageChangeListener() {

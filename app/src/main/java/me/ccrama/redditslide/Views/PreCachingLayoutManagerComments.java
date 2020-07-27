@@ -1,9 +1,8 @@
 package me.ccrama.redditslide.Views;
 
 import android.content.Context;
-
-import androidx.recyclerview.widget.LinearLayoutManager;
-import androidx.recyclerview.widget.RecyclerView;
+import android.support.v7.widget.LinearLayoutManager;
+import android.support.v7.widget.RecyclerView;
 
 import me.ccrama.redditslide.util.LogUtil;
 

@@ -1,7 +1,6 @@
 package me.ccrama.redditslide;
 
 import android.os.AsyncTask;
-
 import net.dean.jraw.managers.AccountManager;
 import net.dean.jraw.models.Contribution;
 import net.dean.jraw.models.Submission;

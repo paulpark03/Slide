@@ -4,11 +4,11 @@ import android.animation.ValueAnimator;
 import android.app.Activity;
 import android.content.Intent;
 import android.graphics.Bitmap;
-import android.graphics.PointF;
 import android.os.AsyncTask;
 import android.os.Build;
 import android.os.Bundle;
 import android.os.Handler;
+import android.support.v4.app.Fragment;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -17,8 +17,6 @@ import android.view.ViewTreeObserver;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.ProgressBar;
-
-import androidx.fragment.app.Fragment;
 
 import com.afollestad.materialdialogs.AlertDialogWrapper;
 import com.google.common.base.Strings;
@@ -57,8 +55,8 @@ import me.ccrama.redditslide.SecretConstants;
 import me.ccrama.redditslide.SettingValues;
 import me.ccrama.redditslide.SubmissionViews.PopulateShadowboxInfo;
 import me.ccrama.redditslide.SubmissionViews.PopulateSubmissionViewHolder;
-import me.ccrama.redditslide.Views.ExoVideoView;
 import me.ccrama.redditslide.Views.ImageSource;
+import me.ccrama.redditslide.Views.MediaVideoView;
 import me.ccrama.redditslide.Views.SubsamplingScaleImageView;
 import me.ccrama.redditslide.Visuals.Palette;
 import me.ccrama.redditslide.util.GifUtils;
@@ -74,23 +72,23 @@ import okhttp3.OkHttpClient;
  */
 public class MediaFragment extends Fragment {
 
-    public String firstUrl;
-    public String contentUrl;
-    public String sub;
-    public String actuallyLoaded;
-    public int i;
-    private ViewGroup rootView;
-    private ExoVideoView videoView;
-    private boolean imageShown;
-    private float previous;
-    private boolean hidden;
-    private long stopPosition;
-    public boolean isGif;
+    public  String                firstUrl;
+    public  String                contentUrl;
+    public  String                sub;
+    public  String                actuallyLoaded;
+    public  int                   i;
+    private ViewGroup             rootView;
+    private MediaVideoView        videoView;
+    private boolean               imageShown;
+    private float                 previous;
+    private boolean               hidden;
+    private long                  stopPosition;
+    public  boolean               isGif;
     private GifUtils.AsyncLoadGif gif;
-    private Submission s;
-    private OkHttpClient client;
-    private Gson gson;
-    private String mashapeKey;
+    private Submission            s;
+    private OkHttpClient          client;
+    private Gson                  gson;
+    private String                mashapeKey;
 
     @Override
     public void onDestroy() {
@@ -108,7 +106,7 @@ public class MediaFragment extends Fragment {
         if (videoView != null) {
             if (isVisibleToUser) {
                 videoView.seekTo(0);
-                videoView.play();
+                videoView.start();
             } else {
                 videoView.pause();
             }
@@ -120,7 +118,7 @@ public class MediaFragment extends Fragment {
         super.onResume();
         if (videoView != null) {
             videoView.seekTo((int) stopPosition);
-            videoView.play();
+            videoView.start();
         }
     }
 
@@ -306,8 +304,6 @@ public class MediaFragment extends Fragment {
                 doLoadDeviantArt(contentUrl);
                 break;
             case IMAGE:
-            case LINK:
-            case REDDIT:
                 doLoadImage(contentUrl);
                 break;
             case IMGUR:
@@ -316,11 +312,16 @@ public class MediaFragment extends Fragment {
             case XKCD:
                 doLoadXKCD(contentUrl);
                 break;
+            case VID_ME:
             case STREAMABLE:
             case VREDDIT_REDIRECT:
             case VREDDIT_DIRECT:
             case GIF:
                 doLoadGif(s);
+                break;
+            case LINK:
+            case REDDIT:
+                doLoadImage(contentUrl);
                 break;
         }
     }
@@ -335,6 +336,7 @@ public class MediaFragment extends Fragment {
                     slidingPanel.setPanelState(SlidingUpPanelLayout.PanelState.COLLAPSED);
                 } else {
                     switch (type) {
+                        case VID_ME:
                         case STREAMABLE:
 
                             if (SettingValues.video) {
@@ -379,7 +381,6 @@ public class MediaFragment extends Fragment {
 
                             break;
                         case SELF:
-                        case NONE:
 
                             break;
                         case ALBUM:
@@ -426,6 +427,9 @@ public class MediaFragment extends Fragment {
                         case GIF:
                             PopulateSubmissionViewHolder.openGif(contextActivity, submission, -1);
                             break;
+                        case NONE:
+
+                            break;
                         case VIDEO:
                             if (!LinkUtil.tryOpenWithVideoPlugin(submission.getUrl())) {
                                 LinkUtil.openUrl(submission.getUrl(), Palette.getStatusBarColor(),
@@ -445,8 +449,8 @@ public class MediaFragment extends Fragment {
         rootView.findViewById(R.id.submission_image).setVisibility(View.GONE);
         final ProgressBar loader = rootView.findViewById(R.id.gifprogress);
         gif = new GifUtils.AsyncLoadGif(getActivity(),
-                videoView, loader,
-                rootView.findViewById(R.id.placeholder), false,
+                (MediaVideoView) rootView.findViewById(R.id.gif), loader,
+                rootView.findViewById(R.id.placeholder), false, false,
                 !(getActivity() instanceof Shadowbox)
                         || ((Shadowbox) (getActivity())).pager.getCurrentItem() == i, sub);
         GifUtils.AsyncLoadGif.VideoType t = GifUtils.AsyncLoadGif.getVideoType(s.getUrl());
@@ -457,7 +461,7 @@ public class MediaFragment extends Fragment {
                 toLoadURL = StringEscapeUtils.unescapeJson(s.getDataNode()
                         .get("media")
                         .get("reddit_video")
-                        .get("dash_url")
+                        .get("fallback_url")
                         .asText()).replace("&amp;", "&");
             } else if (s.getDataNode().has("crosspost_parent_list")) {
                 toLoadURL = StringEscapeUtils.unescapeJson(s.getDataNode()
@@ -465,7 +469,7 @@ public class MediaFragment extends Fragment {
                         .get(0)
                         .get("media")
                         .get("reddit_video")
-                        .get("dash_url")
+                        .get("fallback_url")
                         .asText()).replace("&amp;", "&");
             } else {
                 //We shouldn't get here, will be caught in initializer
@@ -473,14 +477,16 @@ public class MediaFragment extends Fragment {
 
             }
 
-        } else if ((t.shouldLoadPreview() && s.getDataNode().has("preview")
-                && s.getDataNode().get("preview").get("images").get(0).has("variants")
-                && s.getDataNode()
+        } else if ((t.shouldLoadPreview() || s.getUrl().contains("i.redd.it")) && s.getDataNode().has("preview") && s.getDataNode()
+                .get("preview")
+                .get("images")
+                .get(0)
+                .has("variants") && s.getDataNode()
                 .get("preview")
                 .get("images")
                 .get(0)
                 .get("variants")
-                .has("mp4"))) {
+                .has("mp4")) {
             toLoadURL = StringEscapeUtils.unescapeJson(s.getDataNode()
                     .get("preview")
                     .get("images")
@@ -490,13 +496,6 @@ public class MediaFragment extends Fragment {
                     .get("source")
                     .get("url")
                     .asText()).replace("&amp;", "&");
-        } else if ((t.shouldLoadPreview() && s.getDataNode().has("preview")
-                && s.getDataNode().get("preview").has("reddit_video_preview"))) {
-            toLoadURL = StringEscapeUtils.unescapeJson(s.getDataNode()
-                    .get("preview")
-                    .get("reddit_video_preview")
-                    .get("dash_url")
-                    .asText());
         } else if (t == GifUtils.AsyncLoadGif.VideoType.DIRECT
                 && s.getDataNode().has("media")
                 && s.getDataNode().get("media").has("reddit_video")
@@ -522,8 +521,9 @@ public class MediaFragment extends Fragment {
         rootView.findViewById(R.id.gifarea).setVisibility(View.VISIBLE);
         rootView.findViewById(R.id.submission_image).setVisibility(View.GONE);
         final ProgressBar loader = rootView.findViewById(R.id.gifprogress);
-        gif = new GifUtils.AsyncLoadGif(getActivity(), videoView, loader,
-                rootView.findViewById(R.id.placeholder), false,
+        gif = new GifUtils.AsyncLoadGif(getActivity(),
+                (MediaVideoView) rootView.findViewById(R.id.gif), loader,
+                rootView.findViewById(R.id.placeholder), false, false,
                 !(getActivity() instanceof Shadowbox)
                         || ((Shadowbox) (getActivity())).pager.getCurrentItem() == i, sub);
 
@@ -813,7 +813,7 @@ public class MediaFragment extends Fragment {
             fakeImage.setScaleType(ImageView.ScaleType.CENTER_CROP);
 
             File f = ((Reddit) getActivity().getApplicationContext()).getImageLoader()
-                    .getDiskCache()
+                    .getDiscCache()
                     .get(url);
             if (f != null && f.exists()) {
                 imageShown = true;
@@ -828,10 +828,10 @@ public class MediaFragment extends Fragment {
 
                 previous = i.scale;
                 final float base = i.scale;
-                i.setOnStateChangedListener(new SubsamplingScaleImageView.OnStateChangedListener() {
+                i.setOnZoomChangedListener(new SubsamplingScaleImageView.OnZoomChangedListener() {
                     @Override
-                    public void onScaleChanged(float newScale, int origin) {
-                        if (newScale > previous && !hidden && newScale > base) {
+                    public void onZoomLevelChanged(float zoom) {
+                        if (zoom > previous && !hidden && zoom > base) {
                             hidden = true;
                             final View base = rootView.findViewById(R.id.base);
 
@@ -846,7 +846,7 @@ public class MediaFragment extends Fragment {
                             });
                             va.start();
                             //hide
-                        } else if (newScale <= previous && hidden) {
+                        } else if (zoom <= previous && hidden) {
                             hidden = false;
                             final View base = rootView.findViewById(R.id.base);
 
@@ -862,12 +862,7 @@ public class MediaFragment extends Fragment {
                             va.start();
                             //unhide
                         }
-                        previous = newScale;
-                    }
-
-                    @Override
-                    public void onCenterChanged(PointF newCenter, int origin) {
-
+                        previous = zoom;
                     }
                 });
             } else {
@@ -902,7 +897,7 @@ public class MediaFragment extends Fragment {
                                             f =
                                                     ((Reddit) getActivity().getApplicationContext())
                                                             .getImageLoader()
-                                                            .getDiskCache()
+                                                            .getDiscCache()
                                                             .get(url);
                                         }
                                         if (f != null && f.exists()) {
@@ -916,13 +911,13 @@ public class MediaFragment extends Fragment {
 
                                         previous = i.scale;
                                         final float base = i.scale;
-                                        i.setOnStateChangedListener(
-                                                new SubsamplingScaleImageView.OnStateChangedListener() {
+                                        i.setOnZoomChangedListener(
+                                                new SubsamplingScaleImageView.OnZoomChangedListener() {
                                                     @Override
-                                                    public void onScaleChanged(float newScale, int origin) {
-                                                        if (newScale > previous
+                                                    public void onZoomLevelChanged(float zoom) {
+                                                        if (zoom > previous
                                                                 && !hidden
-                                                                && newScale > base) {
+                                                                && zoom > base) {
                                                             hidden = true;
                                                             final View base = rootView.findViewById(
                                                                     R.id.base);
@@ -944,7 +939,7 @@ public class MediaFragment extends Fragment {
                                                                     });
                                                             va.start();
                                                             //hide
-                                                        } else if (newScale <= previous && hidden) {
+                                                        } else if (zoom <= previous && hidden) {
                                                             hidden = false;
                                                             final View base = rootView.findViewById(
                                                                     R.id.base);
@@ -967,12 +962,7 @@ public class MediaFragment extends Fragment {
                                                             va.start();
                                                             //unhide
                                                         }
-                                                        previous = newScale;
-                                                    }
-
-                                                    @Override
-                                                    public void onCenterChanged(PointF newCenter, int origin) {
-
+                                                        previous = zoom;
                                                     }
                                                 });
                                     }

@@ -3,8 +3,7 @@ package me.ccrama.redditslide.Visuals;
 
 import android.content.Context;
 import android.graphics.Color;
-
-import androidx.core.content.ContextCompat;
+import android.support.v4.content.ContextCompat;
 
 import java.util.Map;
 import java.util.TreeMap;
@@ -191,8 +190,9 @@ public class GetClosestColor {
         for (int i : allColors) {
             colors.put(distance(base, i), i);
         }
+        int closest = colors.get(colors.keySet().toArray()[0]);
 
-        return colors.get(colors.keySet().toArray()[0]);
+        return closest;
 
     }
 

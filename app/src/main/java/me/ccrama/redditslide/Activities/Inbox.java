@@ -4,6 +4,11 @@ import android.content.Context;
 import android.content.Intent;
 import android.os.AsyncTask;
 import android.os.Bundle;
+import android.support.design.widget.TabLayout;
+import android.support.v4.app.Fragment;
+import android.support.v4.app.FragmentManager;
+import android.support.v4.app.FragmentStatePagerAdapter;
+import android.support.v4.view.ViewPager;
 import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuInflater;
@@ -12,13 +17,6 @@ import android.view.View;
 import android.view.ViewTreeObserver;
 import android.view.animation.LinearInterpolator;
 import android.view.inputmethod.InputMethodManager;
-
-import androidx.fragment.app.Fragment;
-import androidx.fragment.app.FragmentManager;
-import androidx.fragment.app.FragmentStatePagerAdapter;
-import androidx.viewpager.widget.ViewPager;
-
-import com.google.android.material.tabs.TabLayout;
 
 import net.dean.jraw.managers.InboxManager;
 
@@ -130,7 +128,7 @@ public class Inbox extends BaseActivityAnim {
                 observer.addOnGlobalLayoutListener(new ViewTreeObserver.OnGlobalLayoutListener() {
                     @Override
                     public void onGlobalLayout() {
-                        tabs.getViewTreeObserver().removeOnGlobalLayoutListener(this);
+                        tabs.getViewTreeObserver().removeGlobalOnLayoutListener(this);
                         tabs.getTabAt(tabPosition).select();
                     }
                 });
@@ -220,7 +218,7 @@ public class Inbox extends BaseActivityAnim {
 
         tabs.setupWithViewPager(pager);
 
-        pager.addOnPageChangeListener(new ViewPager.OnPageChangeListener() {
+        pager.setOnPageChangeListener(new ViewPager.OnPageChangeListener() {
             @Override
             public void onPageScrolled(int position, float positionOffset,
                     int positionOffsetPixels) {
@@ -250,7 +248,7 @@ public class Inbox extends BaseActivityAnim {
 
     public class OverviewPagerAdapter extends FragmentStatePagerAdapter {
         public OverviewPagerAdapter(FragmentManager fm) {
-            super(fm, BEHAVIOR_RESUME_ONLY_CURRENT_FRAGMENT);
+            super(fm);
         }
 
         @Override

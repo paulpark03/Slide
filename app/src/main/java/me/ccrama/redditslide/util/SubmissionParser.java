@@ -123,11 +123,10 @@ public class SubmissionParser {
                 }
 
                 String text = html.substring(tagEnd + 1, closeTag);
-                StringBuilder indentSpacingBuilder = new StringBuilder();
+                String indentSpacing = "";
                 for (int j = 0; j < indent; j++) {
-                    indentSpacingBuilder.append("&nbsp;&nbsp;&nbsp;&nbsp;");
+                    indentSpacing += "&nbsp;&nbsp;&nbsp;&nbsp;";
                 }
-                String indentSpacing = indentSpacingBuilder.toString();
                 if (isNumbered) {
                     html = html.substring(0, tagEnd + 1)
                             + indentSpacing +

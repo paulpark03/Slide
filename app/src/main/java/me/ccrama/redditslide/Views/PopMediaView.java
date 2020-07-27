@@ -87,6 +87,7 @@ public class PopMediaView {
             case IMGUR:
                 doLoadImgur(contentUrl, v);
                 break;
+            case VID_ME:
             case STREAMABLE:
             case GIF:
                 doLoadGif(contentUrl, v);
@@ -97,14 +98,13 @@ public class PopMediaView {
     public void doLoadGif(final String dat, View v) {
         v.findViewById(R.id.gifarea).setVisibility(View.VISIBLE);
 
-        ExoVideoView videoView = v.findViewById(R.id.gif);
+        MediaVideoView videoView = (MediaVideoView) v.findViewById(R.id.gif);
 
         videoView.clearFocus();
         v.findViewById(R.id.submission_image).setVisibility(View.GONE);
         final ProgressBar loader = (ProgressBar) v.findViewById(R.id.gifprogress);
         v.findViewById(R.id.progress).setVisibility(View.GONE);
-        GifUtils.AsyncLoadGif gif = new GifUtils.AsyncLoadGif(((Activity) v.getContext()), videoView, loader, null,
-                null, false, true, "");
+        GifUtils.AsyncLoadGif gif = new GifUtils.AsyncLoadGif(((Activity) v.getContext()), (MediaVideoView) v.findViewById(R.id.gif), loader, null, null, false, true, true, "");
         gif.execute(dat);
     }
 
@@ -290,7 +290,7 @@ public class PopMediaView {
         fakeImage.setLayoutParams(new LinearLayout.LayoutParams(i.getWidth(), i.getHeight()));
         fakeImage.setScaleType(ImageView.ScaleType.CENTER_CROP);
 
-        File f = ((Reddit) v.getContext().getApplicationContext()).getImageLoader().getDiskCache().get(url);
+        File f = ((Reddit) v.getContext().getApplicationContext()).getImageLoader().getDiscCache().get(url);
         if (f != null && f.exists()) {
             try {
                 i.setImage(ImageSource.uri(f.getAbsolutePath()));
@@ -322,7 +322,7 @@ public class PopMediaView {
 
                         @Override
                         public void onLoadingComplete(String imageUri, View view, Bitmap loadedImage) {
-                            File f = ((Reddit) v.getContext().getApplicationContext()).getImageLoader().getDiskCache().get(url);
+                            File f = ((Reddit) v.getContext().getApplicationContext()).getImageLoader().getDiscCache().get(url);
                             if (f != null && f.exists()) {
                                 i.setImage(ImageSource.uri(f.getAbsolutePath()));
                             } else {

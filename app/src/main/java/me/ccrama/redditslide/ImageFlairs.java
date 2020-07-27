@@ -189,7 +189,8 @@ public class ImageFlairs {
                     + ":"
                     + nY + " and bit is " + bitmap.getWidth() + ":" + bitmap.getHeight());
 
-            return Bitmap.createBitmap(bitmap, nX, nY, nWidth, nHeight);
+            Bitmap b = Bitmap.createBitmap(bitmap, nX, nY, nWidth, nHeight);
+            return b;
         }
 
     }
@@ -204,7 +205,7 @@ public class ImageFlairs {
 
         Dimensions prevDimension = null;
 
-        static class Dimensions {
+        class Dimensions {
             int width, height;
             Boolean scale   = false;
             Boolean missing = true;
@@ -222,7 +223,7 @@ public class ImageFlairs {
             }
         }
 
-        static class Location {
+        class Location {
             int x, y;
             Boolean isPercentage = false;
             Boolean missing      = true;
@@ -274,15 +275,16 @@ public class ImageFlairs {
                     "(?<! )\\." + className + "(?!-|\\[|[A-Za-z0-9_.])([^\\{]*)*\\{(.+?)\\}");
             Matcher matches = propertyDefinition.matcher(cssDefinitionString);
 
-            StringBuilder properties = null;
+            String properties = null;
 
             while (matches.find()) {
-                if (properties == null) properties = new StringBuilder();
-                properties.insert(0, matches.group(2)
-                        + ";");   // append properties to simulate property overriding
+                if (properties == null) properties = "";
+                properties = matches.group(2)
+                        + ";"
+                        + properties;   // append properties to simulate property overriding
             }
 
-            return properties == null ? null : properties.toString();
+            return properties;
         }
 
         /**

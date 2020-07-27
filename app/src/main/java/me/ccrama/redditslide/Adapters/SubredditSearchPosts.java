@@ -2,9 +2,8 @@ package me.ccrama.redditslide.Adapters;
 
 import android.app.Activity;
 import android.os.AsyncTask;
+import android.support.v4.widget.SwipeRefreshLayout;
 import android.widget.Toast;
-
-import androidx.swiperefreshlayout.widget.SwipeRefreshLayout;
 
 import net.dean.jraw.http.NetworkException;
 import net.dean.jraw.models.Contribution;
@@ -183,7 +182,9 @@ public class SubredditSearchPosts extends GeneralPosts {
                     nomore = true;
                     return newSubmissions;
                 }
-                newSubmissions.addAll(paginator.next());
+                for (Submission s : paginator.next()) {
+                    newSubmissions.add(s);
+                }
 
                 return newSubmissions;
             } catch (Exception e) {

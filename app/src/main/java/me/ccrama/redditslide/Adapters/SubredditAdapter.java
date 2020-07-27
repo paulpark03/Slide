@@ -8,12 +8,11 @@ import android.app.Activity;
 import android.content.Intent;
 import android.graphics.PorterDuff;
 import android.os.Handler;
+import android.support.v7.widget.RecyclerView;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.LinearLayout;
-
-import androidx.recyclerview.widget.RecyclerView;
 
 import net.dean.jraw.models.Subreddit;
 
@@ -71,7 +70,8 @@ public class SubredditAdapter extends RecyclerView.Adapter<RecyclerView.ViewHold
         } else if (position == dataSet.posts.size() && dataSet.nomore) {
             return NO_MORE;
         }
-        return 1;
+        int SUBREDDIT = 1;
+        return SUBREDDIT;
     }
 
     int tag = 1;
@@ -181,13 +181,13 @@ public class SubredditAdapter extends RecyclerView.Adapter<RecyclerView.ViewHold
         }
     }
 
-    public static class SubmissionFooterViewHolder extends RecyclerView.ViewHolder {
+    public class SubmissionFooterViewHolder extends RecyclerView.ViewHolder {
         public SubmissionFooterViewHolder(View itemView) {
             super(itemView);
         }
     }
 
-    public static class SpacerViewHolder extends RecyclerView.ViewHolder {
+    public class SpacerViewHolder extends RecyclerView.ViewHolder {
         public SpacerViewHolder(View itemView) {
             super(itemView);
         }

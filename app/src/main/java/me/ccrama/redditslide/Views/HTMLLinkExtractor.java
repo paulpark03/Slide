@@ -57,7 +57,7 @@ class HTMLLinkExtractor {
 
     }
 
-    public static class HtmlLink {
+    public class HtmlLink {
 
         String link;
         String linkText;

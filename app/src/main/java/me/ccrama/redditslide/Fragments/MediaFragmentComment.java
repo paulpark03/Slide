@@ -4,10 +4,10 @@ import android.animation.ValueAnimator;
 import android.app.Activity;
 import android.content.Intent;
 import android.graphics.Bitmap;
-import android.graphics.PointF;
 import android.os.AsyncTask;
 import android.os.Bundle;
 import android.os.Handler;
+import android.support.v4.app.Fragment;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -16,8 +16,6 @@ import android.view.ViewTreeObserver;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.ProgressBar;
-
-import androidx.fragment.app.Fragment;
 
 import com.afollestad.materialdialogs.AlertDialogWrapper;
 import com.google.gson.Gson;
@@ -48,8 +46,8 @@ import me.ccrama.redditslide.Reddit;
 import me.ccrama.redditslide.SecretConstants;
 import me.ccrama.redditslide.SettingValues;
 import me.ccrama.redditslide.SubmissionViews.PopulateShadowboxInfo;
-import me.ccrama.redditslide.Views.ExoVideoView;
 import me.ccrama.redditslide.Views.ImageSource;
+import me.ccrama.redditslide.Views.MediaVideoView;
 import me.ccrama.redditslide.Views.SubsamplingScaleImageView;
 import me.ccrama.redditslide.util.GifUtils;
 import me.ccrama.redditslide.util.HttpUtil;
@@ -69,7 +67,7 @@ public class MediaFragmentComment extends Fragment {
     public  String                actuallyLoaded;
     public  int                   i;
     private ViewGroup             rootView;
-    private ExoVideoView          videoView;
+    private MediaVideoView        videoView;
     private boolean               imageShown;
     private float                 previous;
     private boolean               hidden;
@@ -93,7 +91,7 @@ public class MediaFragmentComment extends Fragment {
         super.setUserVisibleHint(isVisibleToUser);
         if (isVisibleToUser && videoView != null) {
             videoView.seekTo(0);
-            videoView.play();
+            videoView.start();
         }
     }
 
@@ -102,7 +100,7 @@ public class MediaFragmentComment extends Fragment {
         super.onResume();
         if (videoView != null) {
             videoView.seekTo((int) stopPosition);
-            videoView.play();
+            videoView.start();
         }
     }
 
@@ -132,11 +130,15 @@ public class MediaFragmentComment extends Fragment {
 
         ContentType.Type type = ContentType.getContentType(contentUrl);
 
-        if (ContentType.fullImage(type)) {
+        if (!ContentType.fullImage(type)) {
+            addClickFunctions((rootView.findViewById(R.id.submission_image)), slideLayout, rootView,
+                    type, getActivity(), s);
+
+        } else {
             (rootView.findViewById(R.id.thumbimage2)).setVisibility(View.GONE);
+            addClickFunctions((rootView.findViewById(R.id.submission_image)), slideLayout, rootView,
+                    type, getActivity(), s);
         }
-        addClickFunctions((rootView.findViewById(R.id.submission_image)), slideLayout, rootView,
-                type, getActivity(), s);
         doLoad(contentUrl);
 
         final View.OnClickListener openClick = new View.OnClickListener() {
@@ -226,6 +228,7 @@ public class MediaFragmentComment extends Fragment {
             case XKCD:
                 doLoadXKCD(contentUrl);
                 break;
+            case VID_ME:
             case STREAMABLE:
             case GIF:
                 doLoadGif(contentUrl);
@@ -302,20 +305,23 @@ public class MediaFragmentComment extends Fragment {
                 if (slidingPanel.getPanelState() == SlidingUpPanelLayout.PanelState.EXPANDED) {
                     slidingPanel.setPanelState(SlidingUpPanelLayout.PanelState.COLLAPSED);
                 } else {
-                    if (type == ContentType.Type.IMAGE) {
-                        if (SettingValues.image) {
-                            Intent myIntent = new Intent(contextActivity, MediaView.class);
-                            String url;
-                            url = submission.getUrl();
-                            myIntent.putExtra(MediaView.EXTRA_DISPLAY_URL, submission.getUrl());
-                            myIntent.putExtra(MediaView.EXTRA_URL, url);
-                            myIntent.putExtra(MediaView.SUBREDDIT, submission.getSubredditName());
-                            myIntent.putExtra(MediaView.EXTRA_SHARE_URL, submission.getUrl());
+                    switch (type) {
+                        case IMAGE:
+                            if (SettingValues.image) {
+                                Intent myIntent = new Intent(contextActivity, MediaView.class);
+                                String url;
+                                url = submission.getUrl();
+                                myIntent.putExtra(MediaView.EXTRA_DISPLAY_URL, submission.getUrl());
+                                myIntent.putExtra(MediaView.EXTRA_URL, url);
+                                myIntent.putExtra(MediaView.SUBREDDIT, submission.getSubredditName());
+                                myIntent.putExtra(MediaView.EXTRA_SHARE_URL, submission.getUrl());
 
-                            contextActivity.startActivity(myIntent);
-                        } else {
-                            LinkUtil.openExternally(submission.getUrl());
-                        }
+                                contextActivity.startActivity(myIntent);
+                            } else {
+                                LinkUtil.openExternally(submission.getUrl());
+                            }
+
+                            break;
                     }
                 }
             }
@@ -331,8 +337,9 @@ public class MediaFragmentComment extends Fragment {
         rootView.findViewById(R.id.submission_image).setVisibility(View.GONE);
         final ProgressBar loader = rootView.findViewById(R.id.gifprogress);
         rootView.findViewById(R.id.progress).setVisibility(View.GONE);
-        gif = new GifUtils.AsyncLoadGif(getActivity(), videoView, loader,
-                rootView.findViewById(R.id.placeholder), false, true, sub);
+        gif = new GifUtils.AsyncLoadGif(getActivity(),
+                (MediaVideoView) rootView.findViewById(R.id.gif), loader,
+                rootView.findViewById(R.id.placeholder), false, false, true, sub);
         gif.execute(dat);
     }
 
@@ -550,7 +557,7 @@ public class MediaFragmentComment extends Fragment {
             fakeImage.setScaleType(ImageView.ScaleType.CENTER_CROP);
 
             File f = ((Reddit) getActivity().getApplicationContext()).getImageLoader()
-                    .getDiskCache()
+                    .getDiscCache()
                     .get(url);
             if (f != null && f.exists()) {
                 imageShown = true;
@@ -565,10 +572,10 @@ public class MediaFragmentComment extends Fragment {
 
                 previous = i.scale;
                 final float base = i.scale;
-                i.setOnStateChangedListener(new SubsamplingScaleImageView.OnStateChangedListener() {
+                i.setOnZoomChangedListener(new SubsamplingScaleImageView.OnZoomChangedListener() {
                     @Override
-                    public void onScaleChanged(float newScale, int origin) {
-                        if (newScale > previous && !hidden && newScale > base) {
+                    public void onZoomLevelChanged(float zoom) {
+                        if (zoom > previous && !hidden && zoom > base) {
                             hidden = true;
                             final View base = rootView.findViewById(R.id.base);
 
@@ -583,7 +590,7 @@ public class MediaFragmentComment extends Fragment {
                             });
                             va.start();
                             //hide
-                        } else if (newScale <= previous && hidden) {
+                        } else if (zoom <= previous && hidden) {
                             hidden = false;
                             final View base = rootView.findViewById(R.id.base);
 
@@ -599,12 +606,7 @@ public class MediaFragmentComment extends Fragment {
                             va.start();
                             //unhide
                         }
-                        previous = newScale;
-                    }
-
-                    @Override
-                    public void onCenterChanged(PointF newCenter, int origin) {
-
+                        previous = zoom;
                     }
                 });
             } else {
@@ -639,7 +641,7 @@ public class MediaFragmentComment extends Fragment {
                                             f =
                                                     ((Reddit) getActivity().getApplicationContext())
                                                             .getImageLoader()
-                                                            .getDiskCache()
+                                                            .getDiscCache()
                                                             .get(url);
                                         }
                                         if (f != null && f.exists()) {
@@ -653,13 +655,13 @@ public class MediaFragmentComment extends Fragment {
 
                                         previous = i.scale;
                                         final float base = i.scale;
-                                        i.setOnStateChangedListener(
-                                                new SubsamplingScaleImageView.OnStateChangedListener() {
+                                        i.setOnZoomChangedListener(
+                                                new SubsamplingScaleImageView.OnZoomChangedListener() {
                                                     @Override
-                                                    public void onScaleChanged(float newScale, int origin) {
-                                                        if (newScale > previous
+                                                    public void onZoomLevelChanged(float zoom) {
+                                                        if (zoom > previous
                                                                 && !hidden
-                                                                && newScale > base) {
+                                                                && zoom > base) {
                                                             hidden = true;
                                                             final View base = rootView.findViewById(
                                                                     R.id.base);
@@ -681,7 +683,7 @@ public class MediaFragmentComment extends Fragment {
                                                                     });
                                                             va.start();
                                                             //hide
-                                                        } else if (newScale <= previous && hidden) {
+                                                        } else if (zoom <= previous && hidden) {
                                                             hidden = false;
                                                             final View base = rootView.findViewById(
                                                                     R.id.base);
@@ -704,12 +706,7 @@ public class MediaFragmentComment extends Fragment {
                                                             va.start();
                                                             //unhide
                                                         }
-                                                        previous = newScale;
-                                                    }
-
-                                                    @Override
-                                                    public void onCenterChanged(PointF newCenter, int origin) {
-
+                                                        previous = zoom;
                                                     }
                                                 });
                                     }

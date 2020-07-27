@@ -10,6 +10,10 @@ import android.net.Uri;
 import android.os.AsyncTask;
 import android.os.Build;
 import android.os.Bundle;
+import android.support.annotation.NonNull;
+import android.support.annotation.Nullable;
+import android.support.design.widget.FloatingActionButton;
+import android.support.v7.widget.SwitchCompat;
 import android.text.Editable;
 import android.text.TextWatcher;
 import android.view.View;
@@ -23,15 +27,11 @@ import android.widget.ImageView;
 import android.widget.RadioButton;
 import android.widget.Toast;
 
-import androidx.annotation.NonNull;
-import androidx.annotation.Nullable;
-import androidx.appcompat.widget.SwitchCompat;
-
 import com.afollestad.materialdialogs.AlertDialogWrapper;
 import com.afollestad.materialdialogs.DialogAction;
 import com.afollestad.materialdialogs.MaterialDialog;
-import com.google.android.material.floatingactionbutton.FloatingActionButton;
 
+import me.ccrama.redditslide.Views.ImageInsertEditText;
 import net.dean.jraw.ApiException;
 import net.dean.jraw.managers.AccountManager;
 import net.dean.jraw.models.Submission;
@@ -52,15 +52,16 @@ import java.util.List;
 
 import gun0912.tedbottompicker.TedBottomPicker;
 import me.ccrama.redditslide.Authentication;
+import me.ccrama.redditslide.Constants;
 import me.ccrama.redditslide.Drafts;
 import me.ccrama.redditslide.OpenRedditLink;
 import me.ccrama.redditslide.R;
 import me.ccrama.redditslide.Reddit;
+import me.ccrama.redditslide.SecretConstants;
 import me.ccrama.redditslide.SpoilerRobotoTextView;
 import me.ccrama.redditslide.UserSubscriptions;
 import me.ccrama.redditslide.Views.CommentOverflow;
 import me.ccrama.redditslide.Views.DoEditorActions;
-import me.ccrama.redditslide.Views.ImageInsertEditText;
 import me.ccrama.redditslide.util.LogUtil;
 import me.ccrama.redditslide.util.SubmissionParser;
 import me.ccrama.redditslide.util.TitleExtractor;
@@ -408,7 +409,7 @@ public class Submit extends BaseActivity {
         } else {
             //Multiple images
             try {
-                new UploadImgurAlbum(this, uris.toArray(new Uri[0]));
+                new UploadImgurAlbum(this, uris.toArray(new Uri[uris.size()]));
             } catch (Exception e) {
                 e.printStackTrace();
 
@@ -629,7 +630,7 @@ public class Submit extends BaseActivity {
 
             try {
                 buffer = new BufferedOutputStream(new FileOutputStream(file));
-                byte[] byt = new byte[1024];
+                byte byt[] = new byte[1024];
                 int i;
 
                 for (long l = 0L; (i = in.read(byt)) != -1; l += i) {
@@ -682,8 +683,9 @@ public class Submit extends BaseActivity {
 
 
                 Request request = new Request.Builder().header("Authorization",
-                        "Client-ID bef87913eb202e9")
-                        .url("https://api.imgur.com/3/image")
+                        "Client-ID " + Constants.IMGUR_MASHAPE_CLIENT_ID)
+                        .header("X-Mashape-Key", SecretConstants.getImgurApiKey(c))
+                        .url("https://imgur-apiv3.p.mashape.com/3/image")
                         .post(body)
                         .build();
 
@@ -811,7 +813,7 @@ public class Submit extends BaseActivity {
 
             try {
                 buffer = new BufferedOutputStream(new FileOutputStream(file));
-                byte[] byt = new byte[1024];
+                byte byt[] = new byte[1024];
                 int i;
 
                 for (long l = 0L; (i = in.read(byt)) != -1; l += i) {
@@ -851,8 +853,9 @@ public class Submit extends BaseActivity {
             String albumurl;
             {
                 Request request = new Request.Builder().header("Authorization",
-                        "Client-ID bef87913eb202e9")
-                        .url("https://api.imgur.com/3/album")
+                        "Client-ID " + Constants.IMGUR_MASHAPE_CLIENT_ID)
+                        .header("X-Mashape-Key", SecretConstants.getImgurApiKey(c))
+                        .url("https://imgur-apiv3.p.mashape.com/3/album")
                         .post(new RequestBody() {
                             @Override
                             public MediaType contentType() {
@@ -904,8 +907,9 @@ public class Submit extends BaseActivity {
 
 
                     Request request = new Request.Builder().header("Authorization",
-                            "Client-ID bef87913eb202e9")
-                            .url("https://api.imgur.com/3/image")
+                            "Client-ID " + Constants.IMGUR_MASHAPE_CLIENT_ID)
+                            .header("X-Mashape-Key", SecretConstants.getImgurApiKey(c))
+                            .url("https://imgur-apiv3.p.mashape.com/3/image")
                             .post(body)
                             .build();
 

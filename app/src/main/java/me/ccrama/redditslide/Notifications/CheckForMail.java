@@ -14,10 +14,9 @@ import android.content.Intent;
 import android.content.res.Resources;
 import android.net.Uri;
 import android.os.AsyncTask;
+import android.support.v4.app.NotificationCompat;
+import android.support.v4.app.NotificationManagerCompat;
 import android.text.Html;
-
-import androidx.core.app.NotificationCompat;
-import androidx.core.app.NotificationManagerCompat;
 
 import net.dean.jraw.models.Message;
 import net.dean.jraw.models.Submission;
@@ -44,6 +43,7 @@ import me.ccrama.redditslide.R;
 import me.ccrama.redditslide.Reddit;
 import me.ccrama.redditslide.SettingValues;
 import me.ccrama.redditslide.Visuals.Palette;
+import me.ccrama.redditslide.util.LogUtil;
 
 public class CheckForMail extends BroadcastReceiver {
 
@@ -394,13 +394,14 @@ public class CheckForMail extends BroadcastReceiver {
 
 
                         Notification notification =
-                                new NotificationCompat.Builder(c, Reddit.CHANNEL_SUBCHECKING).setContentIntent(readPI)
+                                new NotificationCompat.Builder(c).setContentIntent(readPI)
                                         .setSmallIcon(R.drawable.notif)
                                         .setTicker(c.getString(
                                                 R.string.sub_post_notifs_notification_title,
                                                 s.getSubredditName()))
                                         .setWhen(System.currentTimeMillis())
                                         .setAutoCancel(true)
+                                        .setChannelId(Reddit.CHANNEL_SUBCHECKING)
                                         .setContentTitle("/r/"
                                                 + s.getSubredditName()
                                                 + " " + c.getString(
@@ -458,7 +459,7 @@ public class CheckForMail extends BroadcastReceiver {
                     }
                 }
                 SubredditPaginator unread = new SubredditPaginator(Authentication.reddit, first,
-                        finalSubs.toArray(new String[0]));
+                        finalSubs.toArray(new String[finalSubs.size()]));
                 unread.setSorting(Sorting.NEW);
                 unread.setLimit(30);
                 if (unread.hasNext()) {

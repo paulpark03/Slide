@@ -19,6 +19,7 @@ import android.graphics.Paint;
 import android.graphics.Path;
 import android.graphics.PorterDuff;
 import android.graphics.PorterDuffXfermode;
+import android.graphics.Rect;
 import android.graphics.RectF;
 import android.graphics.Typeface;
 import android.util.AttributeSet;
@@ -28,6 +29,8 @@ import android.view.View;
 import java.io.ByteArrayOutputStream;
 import java.util.ArrayList;
 import java.util.List;
+// import android.util.Log;
+// import android.widget.Toast;
 
 /**
  * This class defines fields and methods for drawing.
@@ -38,7 +41,7 @@ public class CanvasView extends View {
     public enum Mode {
         DRAW,
         TEXT,
-        ERASER
+        ERASER;
     }
 
     // Enumeration for Drawer
@@ -49,7 +52,7 @@ public class CanvasView extends View {
         CIRCLE,
         ELLIPSE,
         QUADRATIC_BEZIER,
-        QUBIC_BEZIER
+        QUBIC_BEZIER;
     }
 
     private Context context = null;
@@ -263,7 +266,7 @@ public class CanvasView extends View {
         float lengthOfChar = textLength / (float) this.text.length();
         float restWidth = this.canvas.getWidth() - textX;  // text-align : right
         int numChars = (lengthOfChar <= 0) ? 1 : (int) Math.floor((double) (restWidth / lengthOfChar));  // The number of characters at 1 line
-        int modNumChars = Math.max(numChars, 1);
+        int modNumChars = (numChars < 1) ? 1 : numChars;
         float y = textY;
 
         for (int i = 0, len = this.text.length(); i < len; i += modNumChars) {
@@ -659,6 +662,8 @@ public class CanvasView extends View {
     public int getPaintFillColor() {
         return this.paintFillColor;
     }
+
+    ;
 
     /**
      * This method is setter for fill color.

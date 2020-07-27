@@ -2,8 +2,6 @@ package me.ccrama.redditslide.Toolbox;
 
 import com.google.gson.annotations.SerializedName;
 
-import org.apache.commons.text.StringEscapeUtils;
-
 import java.io.UnsupportedEncodingException;
 import java.net.URLDecoder;
 import java.util.List;
@@ -68,7 +66,7 @@ public class RemovalReasons {
     /**
      * Class defining an individual removal reason
      */
-    public static class RemovalReason {
+    public class RemovalReason {
         private String title;
         private String text;
         private String flairText;
@@ -84,8 +82,7 @@ public class RemovalReasons {
 
         public String getText() {
             try {
-                // text is url encoded but uses non-standard %uXXXX char sequences
-                return URLDecoder.decode(StringEscapeUtils.unescapeJava(text.replace("%u", "\\u")), "UTF-8");
+                return URLDecoder.decode(text, "UTF-8"); // text is url encoded
             } catch (UnsupportedEncodingException e) {
                 return null;
             }

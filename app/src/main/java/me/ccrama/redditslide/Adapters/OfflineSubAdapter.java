@@ -54,7 +54,7 @@ public class OfflineSubAdapter extends ArrayAdapter<String> {
         return convertView;
     }
 
-    static class ViewHolder {
+    class ViewHolder {
         TextView txt01;
     }
 

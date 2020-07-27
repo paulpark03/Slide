@@ -4,15 +4,14 @@ import android.app.Activity;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.graphics.PorterDuff;
+import android.support.v4.content.ContextCompat;
+import android.support.v7.view.ContextThemeWrapper;
+import android.support.v7.widget.RecyclerView;
+import android.support.v7.widget.SwitchCompat;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.TextView;
-
-import androidx.appcompat.view.ContextThemeWrapper;
-import androidx.appcompat.widget.SwitchCompat;
-import androidx.core.content.ContextCompat;
-import androidx.recyclerview.widget.RecyclerView;
 
 import com.afollestad.materialdialogs.AlertDialogWrapper;
 
@@ -104,7 +103,7 @@ public class SettingsSubAdapter extends RecyclerView.Adapter<SettingsSubAdapter.
         return objects.size();
     }
 
-    public static class ViewHolder extends RecyclerView.ViewHolder {
+    public class ViewHolder extends RecyclerView.ViewHolder {
         public ViewHolder(View itemView) {
             super(itemView);
         }
@@ -188,21 +187,20 @@ public class SettingsSubAdapter extends RecyclerView.Adapter<SettingsSubAdapter.
         title.setBackgroundColor(currentColor);
 
         if (multipleSubs) {
+            String titleString = "";
 
-            StringBuilder titleStringBuilder = new StringBuilder();
             for (String sub : subreddits) {
                 //if the subreddit is the frontpage, don't put "/r/" in front of it
                 if (sub.equals("frontpage")) {
-                    titleStringBuilder.append(sub).append(", ");
+                    titleString += sub + ", ";
                 } else {
                     if (sub.contains("/m/")) {
-                        titleStringBuilder.append(sub).append(", ");
+                        titleString += sub + ", ";
                     } else {
-                        titleStringBuilder.append("/r/").append(sub).append(", ");
+                        titleString += "/r/" + sub + ", ";
                     }
                 }
             }
-            String titleString = titleStringBuilder.toString();
             titleString = titleString.substring(0, titleString.length() - 2);
             title.setMaxLines(3);
             title.setText(titleString);
@@ -330,19 +328,17 @@ public class SettingsSubAdapter extends RecyclerView.Adapter<SettingsSubAdapter.
             }).setNeutralButton(R.string.btn_reset, new DialogInterface.OnClickListener() {
                 @Override
                 public void onClick(DialogInterface dialog, int which) {
-                    String subTitles;
+                    String subTitles = "";
 
                     if (multipleSubs) {
-                        StringBuilder subTitlesBuilder = new StringBuilder();
                         for (String sub : subreddits) {
                             //if the subreddit is the frontpage, don't put "/r/" in front of it
                             if (sub.equals("frontpage")) {
-                                subTitlesBuilder.append(sub).append(", ");
+                                subTitles += sub + ", ";
                             } else {
-                                subTitlesBuilder.append("/r/").append(sub).append(", ");
+                                subTitles += "/r/" + sub + ", ";
                             }
                         }
-                        subTitles = subTitlesBuilder.toString();
                         subTitles = subTitles.substring(0, subTitles.length() - 2);
                     } else {
                         //if the subreddit is the frontpage, don't put "/r/" in front of it

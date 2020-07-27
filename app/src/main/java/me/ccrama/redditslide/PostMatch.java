@@ -1,7 +1,6 @@
 package me.ccrama.redditslide;
 
 import android.content.SharedPreferences;
-
 import net.dean.jraw.models.Submission;
 
 import java.net.MalformedURLException;
@@ -167,6 +166,7 @@ public class PostMatch {
                     contentMatch = true;
                 }
                 break;
+            case VID_ME:
             case STREAMABLE:
             case VIDEO:
                 if (videos) {

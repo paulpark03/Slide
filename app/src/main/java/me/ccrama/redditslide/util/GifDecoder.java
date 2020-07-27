@@ -374,18 +374,22 @@ class GifDecoder {
                             break;
                         case 0xff: // application extension
                             readBlock();
-                            StringBuilder app = new StringBuilder();
+                            String app = "";
                             for (int i = 0; i < 11; i++) {
-                                app.append((char) block[i]);
+                                app += (char) block[i];
                             }
-                            if (app.toString().equals("NETSCAPE2.0")) {
+                            if (app.equals("NETSCAPE2.0")) {
                                 readNetscapeExt();
                             } else {
                                 skip(); // don't care
                             }
                             break;
                         case 0xfe:// comment extension
+                            skip();
+                            break;
                         case 0x01:// plain text extension
+                            skip();
+                            break;
                         default: // uninteresting extension
                             skip();
                     }
@@ -414,11 +418,11 @@ class GifDecoder {
     }
 
     private void readHeader() {
-        StringBuilder id = new StringBuilder();
+        String id = "";
         for (int i = 0; i < 6; i++) {
-            id.append((char) read());
+            id += (char) read();
         }
-        if (!id.toString().startsWith("GIF")) {
+        if (!id.startsWith("GIF")) {
             status = STATUS_FORMAT_ERROR;
             return;
         }

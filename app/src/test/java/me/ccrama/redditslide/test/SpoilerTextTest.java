@@ -1,5 +1,6 @@
 package me.ccrama.redditslide.test;
 
+import me.ccrama.redditslide.SpoilerRobotoTextView;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.powermock.core.classloader.annotations.PrepareForTest;
@@ -9,8 +10,6 @@ import org.powermock.reflect.Whitebox;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.regex.Pattern;
-
-import me.ccrama.redditslide.SpoilerRobotoTextView;
 
 import static junit.framework.Assert.fail;
 

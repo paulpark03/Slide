@@ -10,16 +10,15 @@ import android.content.Intent;
 import android.graphics.Color;
 import android.os.AsyncTask;
 import android.os.Handler;
+import android.support.design.widget.Snackbar;
+import android.support.v7.widget.RecyclerView;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.LinearLayout;
 import android.widget.TextView;
 
-import androidx.recyclerview.widget.RecyclerView;
-
 import com.afollestad.materialdialogs.AlertDialogWrapper;
-import com.google.android.material.snackbar.Snackbar;
 
 import net.dean.jraw.managers.AccountManager;
 import net.dean.jraw.models.Submission;
@@ -122,7 +121,8 @@ public class SubmissionNewsAdapter extends RecyclerView.Adapter<RecyclerView.Vie
         } else if (position == dataSet.posts.size() && (dataSet.offline || dataSet.nomore)) {
             return NO_MORE;
         }
-        return 1;
+        int SUBMISSION = 1;
+        return SUBMISSION;
     }
 
     int tag = 1;
@@ -326,7 +326,7 @@ public class SubmissionNewsAdapter extends RecyclerView.Adapter<RecyclerView.Vie
                             });
                             View view = s.getView();
                             TextView tv = (TextView) view.findViewById(
-                                    com.google.android.material.R.id.snackbar_text);
+                                    android.support.design.R.id.snackbar_text);
                             tv.setTextColor(Color.WHITE);
                             s.show();
                         }
@@ -396,13 +396,13 @@ public class SubmissionNewsAdapter extends RecyclerView.Adapter<RecyclerView.Vie
     }
 
 
-    public static class SubmissionFooterViewHolder extends RecyclerView.ViewHolder {
+    public class SubmissionFooterViewHolder extends RecyclerView.ViewHolder {
         public SubmissionFooterViewHolder(View itemView) {
             super(itemView);
         }
     }
 
-    public static class SpacerViewHolder extends RecyclerView.ViewHolder {
+    public class SpacerViewHolder extends RecyclerView.ViewHolder {
         public SpacerViewHolder(View itemView) {
             super(itemView);
         }
@@ -436,7 +436,7 @@ public class SubmissionNewsAdapter extends RecyclerView.Adapter<RecyclerView.Vie
                         public void run() {
                             View view = s.getView();
                             TextView tv = (TextView) view.findViewById(
-                                    com.google.android.material.R.id.snackbar_text);
+                                    android.support.design.R.id.snackbar_text);
                             tv.setTextColor(Color.WHITE);
                             s.show();
                         }
@@ -454,7 +454,7 @@ public class SubmissionNewsAdapter extends RecyclerView.Adapter<RecyclerView.Vie
                         public void run() {
                             View view = s.getView();
                             TextView tv = (TextView) view.findViewById(
-                                    com.google.android.material.R.id.snackbar_text);
+                                    android.support.design.R.id.snackbar_text);
                             tv.setTextColor(Color.WHITE);
                             s.show();
                         }

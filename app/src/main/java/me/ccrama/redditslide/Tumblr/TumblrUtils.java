@@ -100,9 +100,9 @@ public class TumblrUtils {
                         + "&id="
                         + id;
                 LogUtil.v(apiUrl);
-                if (tumblrRequests.contains(apiUrl) && JsonParser.parseString(
+                if (tumblrRequests.contains(apiUrl) && new JsonParser().parse(
                         tumblrRequests.getString(apiUrl, "")).getAsJsonObject().has("response")) {
-                    parseJson(JsonParser.parseString(tumblrRequests.getString(apiUrl, ""))
+                    parseJson(new JsonParser().parse(tumblrRequests.getString(apiUrl, ""))
                             .getAsJsonObject());
                 } else {
                     LogUtil.v(apiUrl);

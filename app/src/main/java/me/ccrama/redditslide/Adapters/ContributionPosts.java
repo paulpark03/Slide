@@ -1,8 +1,7 @@
 package me.ccrama.redditslide.Adapters;
 
 import android.os.AsyncTask;
-
-import androidx.swiperefreshlayout.widget.SwipeRefreshLayout;
+import android.support.v4.widget.SwipeRefreshLayout;
 
 import net.dean.jraw.models.Contribution;
 import net.dean.jraw.models.Submission;

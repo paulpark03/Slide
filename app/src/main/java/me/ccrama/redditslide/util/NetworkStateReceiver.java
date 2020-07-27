@@ -37,7 +37,7 @@ public class NetworkStateReceiver extends BroadcastReceiver {
         if(connected == null || listener == null)
             return;
 
-        if(connected)
+        if(connected == true)
             listener.networkAvailable();
         else
             listener.networkUnavailable();
@@ -53,7 +53,7 @@ public class NetworkStateReceiver extends BroadcastReceiver {
     }
 
     public interface NetworkStateReceiverListener {
-        void networkAvailable();
-        void networkUnavailable();
+        public void networkAvailable();
+        public void networkUnavailable();
     }
 }

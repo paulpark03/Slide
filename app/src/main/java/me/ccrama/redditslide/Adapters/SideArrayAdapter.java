@@ -4,6 +4,8 @@ import android.app.Activity;
 import android.content.Context;
 import android.content.Intent;
 import android.graphics.PorterDuff;
+import android.os.Build;
+import android.support.v7.widget.CardView;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -16,8 +18,6 @@ import android.widget.Filter;
 import android.widget.ImageView;
 import android.widget.ListView;
 import android.widget.TextView;
-
-import androidx.cardview.widget.CardView;
 
 import org.apache.commons.lang3.StringUtils;
 
@@ -105,8 +105,13 @@ public class SideArrayAdapter extends ArrayAdapter<String> {
                             @Override
                             public void onGlobalLayout() {
                                 height = finalConvertView.getHeight();
-                                finalConvertView.getViewTreeObserver()
-                                        .removeOnGlobalLayoutListener(this);
+                                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.JELLY_BEAN) {
+                                    finalConvertView.getViewTreeObserver()
+                                            .removeOnGlobalLayoutListener(this);
+                                } else {
+                                    finalConvertView.getViewTreeObserver()
+                                            .removeGlobalOnLayoutListener(this);
+                                }
                             }
                         });
             }

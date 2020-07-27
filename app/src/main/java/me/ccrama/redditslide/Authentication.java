@@ -110,7 +110,7 @@ public class Authentication {
 
     public static boolean authedOnce;
 
-    public static class UpdateToken extends AsyncTask<Void, Void, Void> {
+    public class UpdateToken extends AsyncTask<Void, Void, Void> {
 
         Context context;
 
@@ -269,12 +269,13 @@ public class Authentication {
     public static void doVerify(String lastToken, RedditClient baseReddit,boolean single, Context mContext){
         try {
 
-            if (BuildConfig.DEBUG) LogUtil.v("TOKEN IS " + lastToken);
-            if (!lastToken.isEmpty()) {
+            String token = lastToken;
+            if (BuildConfig.DEBUG) LogUtil.v("TOKEN IS " + token);
+            if (!token.isEmpty()) {
 
                 Credentials credentials = Credentials.installedApp(CLIENT_ID, REDIRECT_URL);
                 OAuthHelper oAuthHelper = baseReddit.getOAuthHelper();
-                oAuthHelper.setRefreshToken(lastToken);
+                oAuthHelper.setRefreshToken(token);
 
                 try {
                     OAuthData finalData;

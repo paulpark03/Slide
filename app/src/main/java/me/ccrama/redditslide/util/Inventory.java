@@ -68,7 +68,7 @@ public class Inventory {
      * a new Inventory.
      */
     public void erasePurchase(String sku) {
-        mPurchaseMap.remove(sku);
+        if (mPurchaseMap.containsKey(sku)) mPurchaseMap.remove(sku);
     }
 
     /**

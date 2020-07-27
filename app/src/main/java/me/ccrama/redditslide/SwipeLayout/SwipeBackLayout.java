@@ -6,13 +6,12 @@ import android.content.res.TypedArray;
 import android.graphics.Canvas;
 import android.graphics.Rect;
 import android.graphics.drawable.Drawable;
+import android.support.v4.view.ViewCompat;
 import android.util.AttributeSet;
 import android.view.MotionEvent;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.FrameLayout;
-
-import androidx.core.view.ViewCompat;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -260,7 +259,7 @@ public class SwipeBackLayout extends FrameLayout {
         mListeners.remove(listener);
     }
 
-    public interface SwipeListener {
+    public static interface SwipeListener {
         /**
          * Invoke when state change
          *
@@ -270,7 +269,7 @@ public class SwipeBackLayout extends FrameLayout {
          * @see #STATE_DRAGGING
          * @see #STATE_SETTLING
          */
-        void onScrollStateChange(int state, float scrollPercent);
+        public void onScrollStateChange(int state, float scrollPercent);
 
         /**
          * Invoke when edge touched
@@ -281,12 +280,12 @@ public class SwipeBackLayout extends FrameLayout {
          * @see #EDGE_BOTTOM
          * @see #EDGE_TOP
          */
-        void onEdgeTouch(int edgeFlag);
+        public void onEdgeTouch(int edgeFlag);
 
         /**
          * Invoke when scroll percent over the threshold for the first time
          */
-        void onScrollOverThreshold();
+        public void onScrollOverThreshold();
     }
 
     /**
